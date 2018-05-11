@@ -16,7 +16,7 @@ var swaggerDefinition = {
     version: '1.0.0',
     description: 'Demonstrating how to use DiemDanh API with your application',
   },
-  host: 'https://itecface8.herokuapp.com',
+  host: 'http://localhost:3000',
   basePath: '/',
 };
 

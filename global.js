@@ -7,21 +7,21 @@ module.exports = {
         password: '',
         database: 'qldd'
     },
-    db_postgres: {
-         host: 'ec2-23-23-248-192.compute-1.amazonaws.com',
-         user: 'eignxcagoiiehd',
-         password: '59b730488b8925bcd9fe55ffaedbe4ba1f95916033e7a184969a5b47d37379bc',
-         port:'5432',
-         database: 'ddliebk1t2mvq5'
-     },
     // db_postgres: {
-    //    host: 'localhost',
-    //    user: 'postgres',
-    //    password: '123',
-    //    port:'5432',
-    //    database: 'qldd'
+    //      host: 'ec2-23-23-248-192.compute-1.amazonaws.com',
+    //      user: 'eignxcagoiiehd',
+    //      password: '59b730488b8925bcd9fe55ffaedbe4ba1f95916033e7a184969a5b47d37379bc',
+    //      port:'5432',
+    //      database: 'ddliebk1t2mvq5'
     // },
-    host: 'itecface8.herokuapp.com',
+    db_postgres: {
+       host: 'localhost',
+       user: 'postgres',
+       password: 'postgres',
+       port:'5432',
+       database: 'itec-face8'
+    },
+    host: 'localhost:3000',
     largePersonGroup: 'hcmus-test',
     faceApiKey: '18db52d47bc5483f92d687a957c40c98',
     email_setting: {
@@ -176,6 +176,10 @@ module.exports = {
         var i = name.lastIndexOf(' ');
         var last_name = name.substr(i + 1, name.length - 1);
         return last_name;
+    },
+
+    getEmailStudentApcs: function(stud_id){
+        return `${stud_id}@student.hcmus.edu.vn`
     },
 
     getProgramCodeFromClassName: function(class_name) {

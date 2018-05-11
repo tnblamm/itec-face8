@@ -1,4 +1,4 @@
 export class AppConfig {
-    public apiHost = "https://itecface8.herokuapp.com/api";
-    public host = "https://itecface8.herokuapp.com";
+    public apiHost = "http://localhost:3000/api";
+    public host = "http://localhost:3000";
 }

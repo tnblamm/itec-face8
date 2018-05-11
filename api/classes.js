@@ -9,6 +9,7 @@ var format = require('pg-format');
 const pool_postgres = new pg.Pool(_global.db_postgres);
 var connection = mysql.createConnection(_global.db);
 var pool = mysql.createPool(_global.db);
+var requestAPI = require("./util/requestAPI");
 var bcrypt = require('bcrypt');
 
 router.post('/list', function(req, res, next) {
@@ -129,48 +130,80 @@ router.post('/create', function(req, res, next) {
                             callback();
                         }else{
                             async.each(student_list, function(student, callback) {
-                                connection.query(format(`SELECT id FROM students WHERE stud_id = %L LIMIT 1`, student.stud_id), function(error, result, fields) {
-                                    if (error) {
-                                        console.log(error.message + ' at get student_id from datbase (file)');
-                                        callback(error);
-                                    } else {
-                                        if(result.rowCount == 0){
-                                            //new student to system
-                                            var new_user = [[
-                                                _global.getFirstName(student.name),
-                                                _global.getLastName(student.name),
-                                                student.stud_id + '@student.hcmus.edu.vn',
-                                                student.phone,
-                                                _global.role.student,
-                                                bcrypt.hashSync(student.stud_id.toString(), 10),
-                                            ]];
-                                            new_student_list.push({
-                                                name: _global.getLastName(student.name),
-                                                email : student.stud_id + '@student.hcmus.edu.vn'
-                                            });
-                                            connection.query(format(`INSERT INTO users (first_name,last_name,email,phone,role_id,password) VALUES %L RETURNING id`, new_user), function(error, results, fields) {
-                                                if (error) {
-                                                    callback(error);
-                                                } else {
-                                                    var student_id = results.rows[0].id;
-                                                    var new_student = [[
-                                                        student_id,
-                                                        student.stud_id,
-                                                        class_id,
-                                                    ]];
-                                                    connection.query(format(`INSERT INTO students (id,stud_id,class_id) VALUES %L`, new_student), function(error, results, fields) {
-                                                        if (error) {
-                                                            callback(error);
-                                                        } else {
-                                                            callback();
-                                                        }
-                                                    });
-                                                }
-                                            });
-                                        }else{
-                                            //old student => ignore
-                                            callback();
+                                var new_code = student.stud_id;
+                                var new_first_name = _global.getFirstName(student.name);
+                                var dataAPI = {
+                                    baseUrl: 'https://westcentralus.api.cognitive.microsoft.com',
+                                    uri: `/face/v1.0/largepersongroups/${_global.largePersonGroup}/persons`,
+                                    headers: {
+                                        'Content-Type':'application/json',
+                                        'Ocp-Apim-Subscription-Key':`${_global.faceApiKey}`
+                                    },
+                                    method: 'POST',
+                                    body: {
+                                        "name": new_code,
+                                        "userData": new_first_name
+                                    }
+                                }
+                                function addStudent(personId){
+                                    var new_person_id = personId;
+                                    connection.query(format(`SELECT id FROM students WHERE stud_id = %L LIMIT 1`, student.stud_id), function(error, result, fields) {
+                                        if (error) {
+                                            console.log(error.message + ' at get student_id from datbase (file)');
+                                            callback(error);
+                                        } else {
+                                            if (result.rowCount == 0) {
+                                                //new student to system
+                                                var new_user = [[
+                                                    _global.getFirstName(student.name),
+                                                    _global.getLastName(student.name),
+                                                    _global.getEmailStudentApcs(student.stud_id),
+                                                    student.phone,
+                                                    _global.role.student,
+                                                    bcrypt.hashSync(student.stud_id.toString(), 10),
+                                                ]];
+                                                connection.query(format(`INSERT INTO users (first_name,last_name,email,phone,role_id,password) VALUES %L RETURNING id`, new_user), function(error, result, fields) {
+                                                    if (error) {
+                                                        callback(error);
+                                                    } else {
+                                                        var student_id = result.rows[0].id;
+                                                        var new_student = [[
+                                                            student_id,
+                                                            student.stud_id,
+                                                            class_id,
+                                                            new_person_id
+                                                        ]];
+                                                        connection.query(format(`INSERT INTO students (id,stud_id,class_id, person_id) VALUES %L`, new_student), function(error, result, fields) {
+                                                            if (error) {
+                                                                callback(error);
+                                                            } else {
+                                                                new_student_list.push({
+                                                                    name : _global.getLastName(student.name),
+                                                                    email : _global.getEmailStudentApcs(student.stud_id)
+                                                                });
+                                                                callback();
+                                                            }
+                                                        });
+                                                    }
+                                                });
+                                            } else {
+                                                //old student => ignore
+                                                callback();
+                                            }
                                         }
+                                    });
+                                }
+                                requestAPI(dataAPI, function(error, result) {
+                                    if (error) {
+                                        _global.sendError(res, null, "Unknown Error");
+                                        return;
+                                    }
+                                    var person_id = result['personId'];
+                                    if (person_id == undefined || person_id == '') {
+                                        _global.sendError(res, null, "Cannot get Person Id");
+                                        return;
+                                    } else {
+                                        addStudent(person_id);
                                     }
                                 });
                             }, function(error) {

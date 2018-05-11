@@ -24,6 +24,7 @@
                                         <input type="text" name="from_to" id="from_to" class="form-control" />
                                     </div>
                                 </div>
+                                <option *ngFor="let class of classes" [value]="program.id">{{program.name}}</option>
                             </div>
                         </div>
                     </div>
