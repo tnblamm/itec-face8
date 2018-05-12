@@ -179,13 +179,16 @@ export class DashboardTeacherComponent implements OnInit, OnDestroy {
     public onCheckAttendance(event,course){
     	this.selected_course = course;
     	if(course.is_opening_attendance){
-    		this.confirmAction();
+            this.confirmAction();
+            console.log('TRUC1111');
     	}
     	else{
+            console.log('TRUC5555');
     		jQuery('#confirmModal').modal('show');
     	}
     }
     public confirmAction(){
+        console.log('TRUC6666');
     	this.localStorage.set('check_attendance_course_id',this.selected_course['id']);
         this.localStorage.set('check_attendance_class_id',this.selected_course['class_id']);
     	this.router.navigate(['/check-attendance']);

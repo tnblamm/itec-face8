@@ -7,21 +7,23 @@ module.exports = {
         password: '',
         database: 'qldd'
     },
-    // db_postgres: {
-    //      host: 'ec2-23-23-248-192.compute-1.amazonaws.com',
-    //      user: 'eignxcagoiiehd',
-    //      password: '59b730488b8925bcd9fe55ffaedbe4ba1f95916033e7a184969a5b47d37379bc',
-    //      port:'5432',
-    //      database: 'ddliebk1t2mvq5'
-    // },
+    // ===== Database on Server
     db_postgres: {
-       host: 'localhost',
-       user: 'postgres',
-       password: 'postgres',
-       port:'5432',
-       database: 'itec-face8'
+         host: 'ec2-107-22-211-182.compute-1.amazonaws.com',
+         user: 'enkpiewbafthms',
+         password: '55be265a531c3c374e3d94e6a00d10e63ede3af6cfafcf2254deba1d64c85fe0',
+         port:'5432',
+         database: 'd3qdiqvkhud343'
     },
-    host: 'localhost:3000',
+    // ===== Database on Local
+    // db_postgres: {
+    //    host: 'localhost',
+    //    user: 'postgres',
+    //    password: 'postgres',
+    //    port:'5432',
+    //    database: 'itec-face8'
+    // },
+    host: 'iteccyle8.herokuapp.com',
     largePersonGroup: 'hcmus-test',
     faceApiKey: '18db52d47bc5483f92d687a957c40c98',
     email_setting: {

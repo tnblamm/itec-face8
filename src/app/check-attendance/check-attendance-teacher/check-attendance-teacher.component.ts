@@ -229,9 +229,12 @@ export class CheckAttendanceTeacherComponent implements OnInit, OnDestroy {
         console.log('Click createAttendance');
         this.attendanceService.createAttendance(this.selected_course_id, this.selected_class_id, this.authService.current_user.id)
             .subscribe(result => {
+                console.log(result);
                 if(result.result == 'success'){
                     this.getOpeningAttendance();
                     this.socketService.emitEventOnCheckAttendanceCreated(null);
+                } else if (result.result == 'failure') {
+                    this.appService.showPNotify('Failure', "You cannot open attendance 2 times per week", 'error');
                 }
             }, error => { this.appService.showPNotify('failure', "Server Error! Can't create new attendances", 'error'); });
     }
