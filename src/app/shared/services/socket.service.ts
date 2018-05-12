@@ -20,6 +20,8 @@ export class SocketService {
   public invokePortalStartedQuiz = new Subject();
   public invokeMobileStartedQuiz = new Subject();
   public invokeMobileEndedQuiz = new Subject();
+  public invokeQuizCompletedMobile = new Subject();
+  public invokeWebPublishedQuiz = new Subject();
   // Constructor with an injection of ToastService
   public constructor() {
     this.socket = io();
@@ -201,5 +203,35 @@ export class SocketService {
   };
   public stopEventOnMobileEndedQuiz(){
     this.socket.off('mobileEndedQuiz');
+  }
+
+  // Publish quiz on website
+  public emitEventOnWebPublishedQuiz(quizCode){
+    this.socket.emit('webPublishedQuiz', quizCode);
+    console.log('webPublishedQuiz', quizCode);
+  };
+  public consumeEventOnWebPublishedQuiz(){
+    var self = this;
+    this.socket.on('webPublishedQuiz', function(event:any){
+      self.invokeWebPublishedQuiz.next(event);
+    });
+  };
+  public stopEventOnWebPublishedQuiz(){
+    this.socket.off('webPublishedQuiz');
+  }
+
+  // Emit Quiz object to Mobile From Web
+  public emitEventOnQuizCompletedMobile(quizCode){
+    this.socket.emit('quizCompletedMobile', quizCode);
+    console.log('quizCompletedMobile', quizCode);
+  };
+  public consumeEventOnQuizCompletedMobile(){
+    var self = this;
+    this.socket.on('quizCompletedMobile', function(event:any){
+      self.invokeQuizCompletedMobile.next(event);
+    });
+  };
+  public stopEventOnQuizCompletedMobile(){
+    this.socket.off('quizCompletedMobile');
   }
 }

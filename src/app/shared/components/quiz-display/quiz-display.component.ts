@@ -331,6 +331,10 @@ export class QuizDisplayComponent implements OnInit,OnDestroy {
 						}
 					}
 				}
+				console.log('Emit Quiz object')
+				this.socketService.emitEventOnQuizCompletedMobile({
+					'quiz': this.quiz
+				});
 				this.onSaveQuiz();
 			}
 		},error=>{this.appService.showPNotify('failure',"Server Error! Can't get student list by course",'error');});

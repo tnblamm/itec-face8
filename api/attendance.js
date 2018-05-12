@@ -11,6 +11,7 @@ var nodemailer = require('nodemailer');
 var randomstring = require("randomstring");
 var pg = require('pg');
 var format = require('pg-format');
+var moment = require('moment');
 const pool_postgres = new pg.Pool(_global.db_postgres);
 var delegate_list = [];
 
@@ -515,10 +516,12 @@ router.post('/opening-by-teacher', function(req, res, next) {
         }
         connection.query(format(query, teacher_id), function(error, result, fields) {
             if (error) {
+                console.log(11111);
                 _global.sendError(res, null, 'error at get opening attendances');
                 done();
                 return console.log(error.message + ' at get opening attendances');
             } else {
+                console.log(55555);
                 res.send({
                     result: 'success',
                     length: result.rowCount,
@@ -542,14 +545,21 @@ router.post('/create', function(req, res, next) {
     var course_id = req.body.course_id;
     var class_id = req.body.class_id;
     var created_by = req.body.created_by ? req.body.created_by : req.decoded.id;
+    
+    var firstWeek = moment().startOf('week').valueOf();
+    var lastWeek = moment().endOf('week').valueOf();
+
     var attendance = [
         [
             course_id,
             class_id,
-            created_by
+            created_by,
+            firstWeek,
+            lastWeek
         ]
     ];
     var new_attendance_id = 0;
+    
     pool_postgres.connect(function(error, connection, done) {
         if(connection == undefined){
             _global.sendError(res, null, "Can't connect to database");
@@ -565,13 +575,21 @@ router.post('/create', function(req, res, next) {
             },
             //Insert Attendance
             function(callback) {
-                connection.query(format(`INSERT INTO attendance (course_id,class_id,created_by) VALUES %L RETURNING id`, attendance), function(error, result, fields) {
-                    if (error) {
-                        callback(error.message + ' at create attendances');
-                    } else {
-                        new_attendance_id = result.rows[0].id;
-                        callback();
+                connection.query(format(`SELECT * FROM attendance WHERE course_id = %L AND class_id = %L AND start_week_date = %L AND end_week_date = %L`, course_id, class_id, firstWeek, lastWeek), function(err, result, fields){
+                    if (err){
+                        return callback(err.message);
                     }
+                    if (result.rowCount >= 2){
+                        return callback('Cannot open attendance');
+                    }
+                    connection.query(format(`INSERT INTO attendance (course_id,class_id,created_by, start_week_date, end_week_date) VALUES %L RETURNING id`, attendance), function(error, result, fields) {
+                        if (error) {
+                            callback(error.message + ' at create attendances');
+                        } else {
+                            new_attendance_id = result.rows[0].id;
+                            callback();
+                        }
+                    });
                 });
             },
             //Insert attendance detail

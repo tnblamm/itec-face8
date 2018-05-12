@@ -96,6 +96,7 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
         this.quizService.publishQuiz(this.selected_attendance['course_id'], this.selected_attendance['class_id'], this.quiz).subscribe(result => {
             this.apiResult = result.result;
             this.apiResultMessage = result.message;
+            console.log('publishQuiz');
             if (this.apiResult == 'failure') {
                 this.localStorage.set('get_published_quiz_error',this.apiResultMessage);
                 w.location.href = this.appConfig.host + '/quiz/display';
@@ -104,6 +105,11 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
             if(result.result == 'success') {
                 this.localStorage.set('token',this.authService.token);
                 this.localStorage.set('quiz_code',result.quiz_code);
+                this.socketService.emitEventOnWebPublishedQuiz({
+                    "course_id": this.selected_attendance['course_id'],
+                    "class_id": this.selected_attendance['class_id'],
+                    "quiz_code": result.quiz_code
+                });
                 w.location.href = this.appConfig.host + '/quiz/display';
             }
         }, error => { this.appService.showPNotify('failure', "Server Error! Can't publish quiz", 'error'); });

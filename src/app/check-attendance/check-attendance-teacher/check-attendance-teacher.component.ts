@@ -226,6 +226,7 @@ export class CheckAttendanceTeacherComponent implements OnInit, OnDestroy {
         }, error => { this.appService.showPNotify('failure', "Server Error! Can't get opening attendances", 'error'); });
     }
     public createAttendance(){
+        console.log('Click createAttendance');
         this.attendanceService.createAttendance(this.selected_course_id, this.selected_class_id, this.authService.current_user.id)
             .subscribe(result => {
                 if(result.result == 'success'){
