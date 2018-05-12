@@ -59,7 +59,7 @@ app.use('/api', require('./api/api'));
    }
  }
 
-//  app.use(forceSSL());
+ app.use(forceSSL());
 
 
 //Xác định trang "public" cho client
