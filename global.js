@@ -55,6 +55,7 @@ module.exports = {
         quiz: 3,
         face: 4,
     },
+    attendancePerWeek: 4,
     quiz_type:{
         academic: 0,
         miscellaneous: 1,

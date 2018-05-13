@@ -16,7 +16,7 @@ var swaggerDefinition = {
     version: '1.0.0',
     description: 'Demonstrating how to use DiemDanh API with your application',
   },
-  host: 'https://iteccyle8.herokuapp.com',
+  host: 'https://iteccyle8.herokuapp.com/',
   basePath: '/',
 };
 

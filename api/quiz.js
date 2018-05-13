@@ -995,4 +995,184 @@ router.post('/update', function(req, res, next) {
         });
     });
 });
+
+// Teacher get checking attendance results by quiz on mobile
+router.post('/quizMobileResults', function(req, res, next) {
+    console.log(11111111);
+    if (req.body.quiz_code == null) {
+        _global.sendError(res, null, "Quiz code is required");
+        return console.log("Quiz code is required");
+    }
+    if (req.body.class_has_course_id == null) {
+        _global.sendError(res, null, "Classe has course id is required");
+        return console.log("Classe has course id is required");
+    }
+
+    var quiz_code = req.body.quiz_code;
+    var class_has_course_id = req.body.class_has_course_id;
+    var list_of_students_answered = [];
+    var attendance_id = 0;
+    var checked_students = [];
+    var unchecked_students = [];
+    var not_participate = [];
+
+    pool_postgres.connect(function(error, connection, done) {
+        console.log(55555555);
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
+        async.series([
+            // Get list of students attend quiz
+            function(callback) {
+                console.log('Get list of students attend quiz');
+                connection.query(format(`SELECT DISTINCT answered_by FROM quiz_answers 
+                        WHERE quiz_question_id IN 
+                        (SELECT id FROM quiz_questions WHERE quiz_id = (SELECT id FROM quiz WHERE code = %L))`, quiz_code), function(error, result, fields) {
+                    if (error){
+                        return callback(error.message + 'at get list of students attend quiz');
+                    } else {
+                        for (var i = 0; i < result.rowCount; i++){
+                            list_of_students_answered.push(result.rows[i].answered_by)
+                        }
+                        callback();
+                    }
+                });
+            },
+            // Get attendance id
+            function(callback) {
+                console.log('Get attendance id');
+                connection.query(format(`SELECT attendance.id FROM attendance,class_has_course 
+                WHERE attendance.class_id = class_has_course.class_id AND
+                class_has_course.course_id = attendance.course_id AND 
+                class_has_course.id = %L AND attendance.closed = FALSE`, class_has_course_id), function(error, result, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        attendance_id = result.rows[0].id;
+                        callback();
+                    }
+                });
+            },
+            // Not participate students
+            function(callback) {
+                console.log('Not participate students');
+                connection.query(format(`SELECT attendance_detail.student_id, 
+                students.stud_id,
+                users.first_name,
+                users.last_name
+                FROM attendance_detail, students, users
+                WHERE attendance_id = %L
+                    AND attendance_detail.student_id = students.id
+                    AND students.id = users.id
+                    AND students.id NOT IN (%L)`, attendance_id, list_of_students_answered), function(error, result, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        for (var i = 0; i < result.rowCount; i++){
+                            var unparticipate_student = {
+                                id: 0,
+                                stud_id: 0,
+                                first_name: 'First Name',
+                                last_name: 'Last Name'
+                            };
+                            unparticipate_student["id"] = result.rows[i].student_id;
+                            unparticipate_student["stud_id"] = result.rows[i].stud_id;
+                            unparticipate_student["first_name"] = result.rows[i].first_name;
+                            unparticipate_student["last_name"] = result.rows[i].last_name;
+                            not_participate.push(unparticipate_student);
+                        }
+                        callback();
+                    }
+                });
+            },
+            // Checked students
+            function(callback) {
+                console.log('Checked students');
+                connection.query(format(`SELECT attendance_detail.student_id, 
+                students.stud_id,
+                users.first_name,
+                users.last_name
+                FROM attendance_detail, students, users
+                WHERE attendance_id = %L
+                    AND attendance_detail.student_id = students.id
+                    AND students.id = users.id
+                    AND attendance_detail.attendance_type = %L`, attendance_id, _global.attendance_type.quiz), function(error, result, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        for (var i = 0; i < result.rowCount; i++){
+                            var checked_student = {
+                                id: 0,
+                                stud_id: 0,
+                                first_name: 'First Name',
+                                last_name: 'Last Name'
+                            };
+                            checked_student["id"] = result.rows[i].student_id;
+                            checked_student["stud_id"] = result.rows[i].stud_id;
+                            checked_student["first_name"] = result.rows[i].first_name;
+                            checked_student["last_name"] = result.rows[i].last_name;
+                            checked_students.push(checked_student);
+                        }
+                        callback();
+                    }
+                });
+            },
+            // Unchecked students
+            function(callback) {
+                console.log('Unchecked students');
+                connection.query(format(`SELECT attendance_detail.student_id, 
+                students.stud_id,
+                users.first_name,
+                users.last_name
+                FROM attendance_detail, students, users
+                WHERE attendance_id = %L
+                    AND attendance_detail.student_id = students.id
+                    AND students.id = users.id
+                    AND attendance_detail.attendance_type = %L
+                    AND students.id IN (%L)`, attendance_id, _global.attendance_type.absent, list_of_students_answered), function(error, result, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        for (var i = 0; i < result.rowCount; i++){
+                            var unchecked_student = {
+                                id: 0,
+                                stud_id: 0,
+                                first_name: 'First Name',
+                                last_name: 'Last Name'
+                            };
+                            unchecked_student["id"] = result.rows[i].student_id;
+                            unchecked_student["stud_id"] = result.rows[i].stud_id;
+                            unchecked_student["first_name"] = result.rows[i].first_name;
+                            unchecked_student["last_name"] = result.rows[i].last_name;
+                            unchecked_students.push(unchecked_student);
+                        }
+                        callback();
+                    }
+                });
+            }
+        ], function(error) {
+            if (error) {
+                _global.sendError(res, error.message);
+                done();
+                return console.log(error);
+            } else {
+                console.log('Success get attendance results quiz-------------------------');
+                res.send({ 
+                    result: 'success', 
+                    message: 'Successully response quiz results to mobile', 
+                    not_participate_list:  not_participate,
+                    checked_student_list: checked_students,
+                    unchecked_student_list: unchecked_students
+                });
+                done();
+                // var socket = req.app.get('socket');
+                // socket.emit('checkAttendanceUpdated', { 'course_id': course_id, 'class_id': class_id });            
+            }
+        });
+    });
+});
+
+
 module.exports = router;

@@ -309,6 +309,18 @@ CREATE TABLE quiz_questions (
 );
 
 -- ----------------------------
+-- Table structure for attendance_image
+-- ----------------------------
+DROP TABLE IF EXISTS attendance_image;
+
+CREATE TABLE attendance_image
+(
+    attendance_id integer,
+    created_time timestamp with time zone,
+    attendance_img character varying(255)
+)
+
+-- ----------------------------
 -- Table structure for answers
 -- ----------------------------
 DROP TABLE IF EXISTS quiz_answers;

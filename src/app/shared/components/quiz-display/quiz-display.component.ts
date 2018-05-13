@@ -333,7 +333,8 @@ export class QuizDisplayComponent implements OnInit,OnDestroy {
 				}
 				console.log('Emit Quiz object')
 				this.socketService.emitEventOnQuizCompletedMobile({
-					'quiz': this.quiz
+					'class_has_course_id': this.quiz['class_has_course_id'],
+					'quiz_code': this.quiz['code']
 				});
 				this.onSaveQuiz();
 			}

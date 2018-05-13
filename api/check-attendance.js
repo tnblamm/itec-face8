@@ -43,6 +43,67 @@ router.post('/check-list', function(req, res, next) {
     });
 });
 
+router.post('/verify-face', function(req, res, next) {
+    if (req.body.student_id == null || req.body.student_id == 0) {
+        _global.sendError(res, null, "student_id is required");
+        return console.log("student_id is required");
+    }
+    if (req.body.attendance_id == null || req.body.attendance_id == 0) {
+        _global.sendError(res, null, "attendance_id is required");
+        return console.log("attendance_id is required");
+    }
+    var student_id = req.body.student_id;
+    var attendance_id = req.body.attendance_id;
+    var attendance_type = req.body.attendance_type;
+    pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
+        var new_attendance = [[
+            attendance_id,
+            created_time,
+            attendance_img
+        ]];
+        async.series([
+            // Update attendance detail
+            function(callback){
+                connection.query(format(`UPDATE attendance_detail SET attendance_type = %L, attendance_time = %L WHERE attendance_id = %L AND student_id = %L`,attendance_type, new Date(), attendance_id, student_id), function(error, result, fields) {
+                    if (error){
+                        callback(error.message + ' at update attendance detail');
+                    } else {
+                        callback();
+                    }
+                })
+            },
+            // Update image of attendance detail
+            function(callback){
+                connection.query(format(`INSERT INTO attendance_image(attendance_id, created_time, attendance_img) VALUES %L`, new_attendance), function(error, result, fields) {
+                    if (error){
+                        callback(error.message + ' at update attendance detail');
+                    } else {
+                        callback();
+                    }
+                })
+            }
+        ], function(error){
+            if (error) {
+                _global.sendError(res, null, error);
+                done();
+                return console.log(error);
+            } else {
+                res.send({
+                    result: 'success',
+                });
+                var socket = req.app.get('socket');
+                socket.emit('checkAttendanceUpdated', {'course_id':course_id,'class_id':class_id});
+                done();
+            }
+        });
+    });
+});
+
 router.post('/qr-code/:id', function(req, res, next) {
     var attendance_id = req.params['id'];
     if (attendance_id == null || attendance_id == 0) {
