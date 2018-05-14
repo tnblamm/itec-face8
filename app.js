@@ -16,7 +16,7 @@ var swaggerDefinition = {
     version: '1.0.0',
     description: 'Demonstrating how to use DiemDanh API with your application',
   },
-  host: 'https://iteccyle8.herokuapp.com',
+  host: 'http://localhost:3000',
   basePath: '/',
 };
 
@@ -59,7 +59,7 @@ app.use('/api', require('./api/api'));
    }
  }
 
- app.use(forceSSL());
+//  app.use(forceSSL());
 
 
 //Xác định trang "public" cho client

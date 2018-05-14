@@ -233,7 +233,7 @@ export class CheckAttendanceTeacherComponent implements OnInit, OnDestroy {
             .subscribe(result => {
                 if (result.result != 'success'){
                     this.appService.showPNotify('Failure', "You cannot open attendance 2 times per week", 'error');
-                    console.log(787654);
+                    this.router.navigate(['/dashboard']);
                     return;
                 }
                 console.log(666666);

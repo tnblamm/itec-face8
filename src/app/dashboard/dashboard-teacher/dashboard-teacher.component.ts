@@ -191,7 +191,8 @@ export class DashboardTeacherComponent implements OnInit, OnDestroy {
         console.log('TRUC6666');
     	this.localStorage.set('check_attendance_course_id',this.selected_course['id']);
         this.localStorage.set('check_attendance_class_id',this.selected_course['class_id']);
-    	this.router.navigate(['/check-attendance']);
+        this.router.navigate(['/check-attendance']);
+
     }
     public onChangePassword(){
         this.router.navigate(['/change-password']);
