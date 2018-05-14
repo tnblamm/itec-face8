@@ -579,7 +579,7 @@ router.post('/create', function(req, res, next) {
                     if (err){
                         return callback(err.message);
                     }
-                    if (result.rowCount >= _global.attendancePerWeek){
+                    if (result.rowCount >= 2){
                         return callback('Cannot open attendance');
                     }
                     connection.query(format(`INSERT INTO attendance (course_id,class_id,created_by, start_week_date, end_week_date) VALUES %L RETURNING id`, attendance), function(error, result, fields) {
@@ -1027,14 +1027,14 @@ router.post('/check-attendance', function(req, res, next) {
 
             class_has_course_id = result.rows[0].id;
 
-            connection.query(format(`SELECT students.id as id, students.stud_id as code, CONCAT(users.first_name, ' ', users.last_name) AS name, attendance_detail.*, attendance_detail.attendance_type as status, users.avatar as avatar
-            FROM users, attendance_detail, students, student_enroll_course
-            WHERE users.id = students.id
-            AND attendance_detail.student_id = students.id
-            AND student_enroll_course.class_has_course_id = %L
-            AND students.id = student_enroll_course.student_id
-            AND attendance_detail.attendance_id = %L
-            AND student_enroll_course.attendance_status = %L`, class_has_course_id, attendance_id, _global.attendance_status.normal), function(error, result, fields) {
+            connection.query(format(`SELECT students.id as id, students.stud_id as code, students.person_id, CONCAT(users.first_name, ' ', users.last_name) AS name, attendance_detail.*, attendance_detail.attendance_type as status, users.avatar as avatar
+                FROM users, attendance_detail, students, student_enroll_course
+                WHERE users.id = students.id
+                AND attendance_detail.student_id = students.id
+                AND student_enroll_course.class_has_course_id = %L
+                AND students.id = student_enroll_course.student_id
+                AND attendance_detail.attendance_id = %L
+                AND student_enroll_course.attendance_status = %L`, class_has_course_id, attendance_id, _global.attendance_status.normal), function(error, result, fields) {
 
                 if (error) {
                     var message = error.message + ' at get student_list by course';

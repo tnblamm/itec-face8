@@ -170,6 +170,7 @@ export class CheckAttendanceTeacherComponent implements OnInit, OnDestroy {
                 if (this.opening_attendances.length == 0) {
                     if(this.selected_course_id && this.selected_class_id){
                         this.createAttendance();
+                        return;
                     }else{
                         this.router.navigate(['/dashboard']);
                         this.appService.showPNotify('info', "There are no opening attendance! Select one first", 'info');
@@ -193,6 +194,7 @@ export class CheckAttendanceTeacherComponent implements OnInit, OnDestroy {
                         if (i == this.opening_attendances.length) {
                             //new
                             this.createAttendance();
+                            console.log(444444);
                         }
                         else{
                             this.getCheckAttendanceList();
@@ -229,13 +231,15 @@ export class CheckAttendanceTeacherComponent implements OnInit, OnDestroy {
         console.log('Click createAttendance');
         this.attendanceService.createAttendance(this.selected_course_id, this.selected_class_id, this.authService.current_user.id)
             .subscribe(result => {
-                console.log(result);
-                if(result.result == 'success'){
-                    this.getOpeningAttendance();
-                    this.socketService.emitEventOnCheckAttendanceCreated(null);
-                } else if (result.result == 'failure') {
+                if (result.result != 'success'){
                     this.appService.showPNotify('Failure', "You cannot open attendance 2 times per week", 'error');
+                    console.log(787654);
+                    return;
                 }
+                console.log(666666);
+                this.getOpeningAttendance();
+                this.socketService.emitEventOnCheckAttendanceCreated(null);
+                return;
             }, error => { this.appService.showPNotify('failure', "Server Error! Can't create new attendances", 'error'); });
     }
     public onChangeAttendance() {
