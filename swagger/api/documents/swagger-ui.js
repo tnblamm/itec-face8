@@ -6749,7 +6749,7 @@ var Operation = module.exports = function (parent, scheme, operationId, httpMeth
       this.host = window.location.host;
     }
     else {
-      this.host = 'https://iteccyle8.herokuapp.com';
+      this.host = 'http://localhost:3000';
     }
   }
   this.parameterMacro = parent.parameterMacro || function (operation, parameter) {

@@ -19,7 +19,7 @@ var swaggerDefinition = {
     version: '1.0.0',
     description: 'Demonstrating how to use DiemDanh API with your application',
   },
-  host: 'https://iteccyle8.herokuapp.com',
+  host: 'http://localhost:3000',
   basePath: '/',
 };
 
@@ -62,7 +62,7 @@ const forceSSL = function () {
   }
 }
 
- app.use(forceSSL());
+//  app.use(forceSSL());
 
 // Cron-tab for train group
 var j = schedule.scheduleJob('30 * * * *', function () {

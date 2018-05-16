@@ -5,10 +5,11 @@ var _global = require('../global.js');
 var mysql = require('mysql');
 var pool = mysql.createPool(_global.db);
 var async = require("async");
-
+var requestAPI = require("./util/requestAPI");
 var pg = require('pg');
 var format = require('pg-format');
 const pool_postgres = new pg.Pool(_global.db_postgres);
+
 
 //[name]
 var insert_roles = [
@@ -1247,15 +1248,6 @@ var seeding_postgres = function(res) {
                 });
             },
             function(callback) {
-                connection.query(format('INSERT INTO students (id,stud_id,class_id) VALUES %L', insert_students), function(error, results, fields) {
-                    if (error) {
-                        callback(error);
-                    } else {
-                        callback();
-                    }
-                });
-            },
-            function(callback) {
                 connection.query(format('INSERT INTO student_enroll_course (class_has_course_id,student_id) VALUES %L', insert_student_enroll_course), function(error, results, fields) {
                     if (error) {
                         callback(error);
@@ -1414,9 +1406,80 @@ var seeding_admin = function(res) {
         });
     });
 }
+
+var seeding_student_postgres = function(res) {
+    pool_postgres.connect(function(error, connection, done) {
+        async.auto({
+
+            getPersonIdFromAzure: function(callback, results){
+                var id = results.id;
+                var stud_id = results.stud_id;
+                var person_id = [];
+                for (var i = 0; i < insert_students.length; i++){
+                    // console.log(22222);
+                    var current_student = insert_students[i];
+                    var id = current_student[0];
+                    var stud_id = current_student[1];
+                    var dataAPI = {
+                        baseUrl: 'https://westcentralus.api.cognitive.microsoft.com',
+                        uri: `/face/v1.0/largepersongroups/${_global.largePersonGroup}/persons`,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Ocp-Apim-Subscription-Key': `${_global.faceApiKey}`
+                        },
+                        method: 'POST',
+                        body: {
+                            "name": id,
+                            "userData": stud_id
+                        }
+                    }
+                    requestAPI(dataAPI, function (error, result) {
+                        console.log(33333);
+                        if (error) {
+                            _global.sendError(res, null, "Unknown Error");
+                            return;
+                        }
+                        person_id.push(result['personId']);
+                    });
+                }
+                callback(null, person_id);
+            },
+
+            insertPersonToTable: ['getPersonIdFromAzure', function(callback, results){
+                var person_id = results.getPersonIdFromAzure;
+                console.log(person_id);
+                for (var i = 0; i < insert_students.length; i++){
+                    console.log('Insert student')
+                    var current_student = insert_students[i];
+                    var id = current_student[0];
+                    var stud_id = current_student[1];
+                    var class_id = current_student[2];
+                    connection.query(format('INSERT INTO students (id,stud_id,class_id, person_id) VALUES (%L, %L, %L, %L)', id, stud_id, class_id, person_id[i]), function(error, results, fields) {
+                        console.log('Success insert student')
+                        if (error) {
+                            callback('Error insert to table students', null);
+                        }
+                    });
+                }
+                callback(null,{'status':'200', 'msg':'Successfully inserted student'});
+            }]
+        }, function(error) {
+            if (error) {
+                console.log(error);
+                done(error);
+            } else {
+                console.log('success insert student seeding!---------------------------------------');
+                res.send({ result: 'success', message: 'success seeding student' });
+                done();
+            }
+        });
+    });
+};
+
 router.get('/', function(req, res, next) {
     //seeding_mysql(res);
     seeding_postgres(res);
+    seeding_student_postgres(res);
 });
 router.get('/admin', function(req, res, next) {
     //seeding_mysql(res);

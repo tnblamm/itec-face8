@@ -121,6 +121,10 @@ export class CheckAttendanceStudentComponent implements OnInit, OnDestroy {
                         this.check_attendance_list[i].attendance_details[j]['icon'] = 'fa-question-circle';
                         this.check_attendance_list[i].attendance_details[j]['method'] = 'Quiz';
                         break;
+                    case this.appService.attendance_type.face:
+                        this.check_attendance_list[i].attendance_details[j]['icon'] = 'fa-smile-o';
+                        this.check_attendance_list[i].attendance_details[j]['method'] = 'Face';
+                        break;  
                     case this.appService.attendance_type.permited_absent:
                         this.check_attendance_list[i].attendance_details[j]['icon'] = 'fa-envelope-square';
                         this.check_attendance_list[i].attendance_details[j]['method'] = 'Permited Absent';

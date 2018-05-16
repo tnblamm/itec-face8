@@ -63,6 +63,10 @@ export class DashboardStudentComponent implements OnInit {
 								this.attendance_list_by_student[i].attendance_details[j]['icon'] = 'fa-question-circle';
 								this.attendance_list_by_student[i].attendance_details[j]['method'] = 'Quiz';
 								break;
+							case this.appService.attendance_type.face:
+								this.attendance_list_by_student[i].attendance_details[j]['icon'] = 'fa-smile-o';
+								this.attendance_list_by_student[i].attendance_details[j]['method'] = 'Face';
+								break;  		
 							case this.appService.attendance_type.permited_absent:
 								this.attendance_list_by_student[i].attendance_details[j]['icon'] = 'fa-envelope-square';
 								this.attendance_list_by_student[i].attendance_details[j]['method'] = 'Permited Absent';
@@ -94,6 +98,9 @@ export class DashboardStudentComponent implements OnInit {
 							break;
 						case this.appService.attendance_type.quiz:
 							this.opening_attendance_for_student[i]['checked_by'] = "Checked with quiz";
+							break;
+						case this.appService.attendance_type.face:
+							this.opening_attendance_for_student[i]['checked_by'] = "Checked with Face Recognition";
 							break;
 						case this.appService.attendance_type.permited_absent:
 							this.opening_attendance_for_student[i]['checked_by'] = "Permited Absent";

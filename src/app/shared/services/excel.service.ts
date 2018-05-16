@@ -781,6 +781,7 @@ export class ExcelService {
                         switch (attendance_list[i].attendance_details[j].attendance_type) {
                             case this.appService.attendance_type.checklist:
                             case this.appService.attendance_type.quiz:
+                            case this.appService.attendance_type.face:
                             case this.appService.attendance_type.qr:
                                 workbook.sheet(0).cell(cell[j] + Math.floor(i + 5)).value('X').style("border", true).style("bold",true);
                                 break;

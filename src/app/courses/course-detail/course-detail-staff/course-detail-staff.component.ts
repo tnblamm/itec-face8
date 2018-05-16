@@ -111,6 +111,10 @@ export class CourseDetailStaffComponent implements OnInit {
                         this.attendance_list[i].attendance_details[j]['icon'] = 'fa-question-circle';
                         this.attendance_list[i].attendance_details[j]['method'] = 'Quiz';
                         break;
+                    case this.appService.attendance_type.face:
+                        this.attendance_list[i].attendance_details[j]['icon'] = 'fa-smile-o';
+                        this.attendance_list[i].attendance_details[j]['method'] = 'Face';
+                        break;  
                     case this.appService.attendance_type.permited_absent:
                         this.attendance_list[i].attendance_details[j]['icon'] = 'fa-envelope-square';
                         this.attendance_list[i].attendance_details[j]['method'] = 'Permited Absent';
