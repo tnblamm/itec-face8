@@ -579,7 +579,7 @@ router.post('/create', function(req, res, next) {
                     if (err){
                         return callback(err.message);
                     }
-                    if (result.rowCount >= 2){
+                    if (result.rowCount >= 4){
                         return callback('Cannot open attendance');
                     }
                     connection.query(format(`INSERT INTO attendance (course_id,class_id,created_by, start_week_date, end_week_date) VALUES %L RETURNING id`, attendance), function(error, result, fields) {

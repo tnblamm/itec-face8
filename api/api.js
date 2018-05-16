@@ -10,6 +10,7 @@ var async = require("async");
 var pg = require('pg');
 var format = require('pg-format');
 const pool_postgres = new pg.Pool(_global.db_postgres);
+
 var fs = require('fs');
 
 router.use(function(req, res, next) {

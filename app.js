@@ -7,6 +7,9 @@ var bodyParser = require('body-parser');
 var cors = require('cors');
 var swaggerJSDoc = require('swagger-jsdoc');
 var compression = require('compression');
+var schedule = require('node-schedule');
+var requestAPI = require("./api/util/requestAPI");
+var _global = require('./global.js');
 var app = express();
 
 // swagger definition
@@ -16,7 +19,7 @@ var swaggerDefinition = {
     version: '1.0.0',
     description: 'Demonstrating how to use DiemDanh API with your application',
   },
-  host: 'http://localhost:3000',
+  host: 'https://iteccyle8.herokuapp.com',
   basePath: '/',
 };
 
@@ -39,7 +42,7 @@ app.use(cors()); //normal CORS
 app.use(express.static(path.join(__dirname, 'swagger')));
 app.use(compression());
 
-app.get('/api/swagger.json', function(req, res) {
+app.get('/api/swagger.json', function (req, res) {
   res.setHeader('Content-Type', 'application/json');
   res.send(swaggerSpec);
 });
@@ -48,25 +51,44 @@ app.use('/authenticate', require('./api/authenticate'));
 app.use('/seed', require('./api/seed'));
 app.use('/api', require('./api/api'));
 
- const forceSSL = function() {
-   return function (req, res, next) {
-     if (req.headers['x-forwarded-proto'] !== 'https') {
-       return res.redirect(
+const forceSSL = function () {
+  return function (req, res, next) {
+    if (req.headers['x-forwarded-proto'] !== 'https') {
+      return res.redirect(
         ['https://', req.get('Host'), req.url].join('')
-       );
-     }
-     next();
-   }
- }
+      );
+    }
+    next();
+  }
+}
 
-//  app.use(forceSSL());
+ app.use(forceSSL());
 
+// Cron-tab for train group
+var j = schedule.scheduleJob('30 * * * *', function () {
+  var dataAPI = {
+    baseUrl: 'https://westcentralus.api.cognitive.microsoft.com',
+    uri: `/face/v1.0/largepersongroups/${_global.largePersonGroup}/train`,
+    headers: {
+      'Ocp-Apim-Subscription-Key': `${_global.faceApiKey}`
+    },
+    method: 'POST',
+  }
+
+  requestAPI(dataAPI, function (error, result) {
+    if (error) {
+      console.log(error);
+      return;
+    }
+    console.log('Your request accepted');
+  });
+});
 
 //Xác định trang "public" cho client
 app.use(express.static(path.join(__dirname, 'dist')));
 
-app.use('*', function(req, res, next) {
-   res.sendFile(path.join(__dirname,'/dist/index.html'));
+app.use('*', function (req, res, next) {
+  res.sendFile(path.join(__dirname, '/dist/index.html'));
 });
 
 module.exports = app;

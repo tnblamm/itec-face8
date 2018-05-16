@@ -19,13 +19,16 @@ module.exports = (params, callback) => {
     }
 
     request(options, function (error, response, body) {
-        if(response.statusCode == 200){
-            var info = JSON.parse(body);
+        if(response.statusCode == 200 || response.statusCode == 202){
+            var info = {};
+            if (body) {
+                info = JSON.parse(body);
+            }
             // console.log(info);
             callback(null, info);
         } else {
             console.log('error: '+ response.statusCode);
-            callback(response);
+            callback(error, response);
         }
     });
     // return callback(error, response, body) {
