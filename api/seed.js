@@ -1409,14 +1409,9 @@ var seeding_admin = function(res) {
 
 var seeding_student_postgres = function(res) {
     pool_postgres.connect(function(error, connection, done) {
-        async.auto({
-
-            getPersonIdFromAzure: function(callback, results){
-                var id = results.id;
-                var stud_id = results.stud_id;
-                var person_id = [];
-                for (var i = 0; i < insert_students.length; i++){
-                    // console.log(22222);
+        for (var i = 0; i < insert_students; i++){
+            async.auto({
+                getPersonIdFromStudentArray: function(callback){
                     var current_student = insert_students[i];
                     var id = current_student[0];
                     var stud_id = current_student[1];
@@ -1433,54 +1428,62 @@ var seeding_student_postgres = function(res) {
                             "userData": stud_id
                         }
                     }
+                    callback(null,{'current_student':current_student, 'dataAPI': dataAPI});
+                },
+                getPersonIdFromAzure: ['getPersonIdFromStudentArray' ,function(callback, results){
+                    var dataAPI = results['getPersonIdFromStudentArray'].dataAPI;
                     requestAPI(dataAPI, function (error, result) {
-                        console.log(33333);
                         if (error) {
                             _global.sendError(res, null, "Unknown Error");
                             return;
                         }
-                        person_id.push(result['personId']);
+                        callback(null, result['personId']);
                     });
-                }
-                callback(null, person_id);
-            },
-
-            insertPersonToTable: ['getPersonIdFromAzure', function(callback, results){
-                var person_id = results.getPersonIdFromAzure;
-                console.log(person_id);
-                for (var i = 0; i < insert_students.length; i++){
-                    console.log('Insert student')
-                    var current_student = insert_students[i];
+                }],
+                insertPersonToTable: ['getPersonIdFromStudentArray', 'getPersonIdFromAzure', function(callback, results){
+                    var person_id = results['getPersonIdFromAzure'];
+                    var current_student = results['getPersonIdFromStudentArray'].current_student;
                     var id = current_student[0];
                     var stud_id = current_student[1];
                     var class_id = current_student[2];
-                    connection.query(format('INSERT INTO students (id,stud_id,class_id, person_id) VALUES (%L, %L, %L, %L)', id, stud_id, class_id, person_id[i]), function(error, results, fields) {
+                    var new_student = [[
+                        id,
+                        stud_id,
+                        class_id,
+                        person_id
+                    ]]
+                    connection.query(format('INSERT INTO students (id,stud_id,class_id, person_id) VALUES %L', new_student), function(error, results, fields) {
                         console.log('Success insert student')
                         if (error) {
                             callback('Error insert to table students', null);
                         }
+                        callback(null,{'status':'200', 'msg':'Successfully inserted student'});
                     });
+                }]
+            }, function(error) {
+                if (error) {
+                    console.log(error);
+                    done(error);
+                } else {
+                    console.log('success insert student seeding!---------------------------------------');
+                    res.send({ result: 'success', message: 'success seeding student' });
+                    done();
                 }
-                callback(null,{'status':'200', 'msg':'Successfully inserted student'});
-            }]
-        }, function(error) {
-            if (error) {
-                console.log(error);
-                done(error);
-            } else {
-                console.log('success insert student seeding!---------------------------------------');
-                res.send({ result: 'success', message: 'success seeding student' });
-                done();
-            }
-        });
+            });
+        }
     });
 };
 
 router.get('/', function(req, res, next) {
     //seeding_mysql(res);
     seeding_postgres(res);
+});
+
+router.get('/student', function(req, res, next) {
+    //seeding_mysql(res);
     seeding_student_postgres(res);
 });
+
 router.get('/admin', function(req, res, next) {
     //seeding_mysql(res);
     seeding_admin(res);
