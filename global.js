@@ -24,7 +24,7 @@ module.exports = {
     //    database: 'itec-face81'
     // },
     host: 'iteccyle8.herokuapp.com',
-    largePersonGroup: 'hcmus-test',
+    largePersonGroup: 'hcmus-face',
     faceApiKey: '18db52d47bc5483f92d687a957c40c98',
     email_setting: {
         host: 'smtp.office365.com', // Office 365 server
