@@ -44,7 +44,7 @@ router.post('/check-list', function (req, res, next) {
 });
 
 router.post('/verify-face', function (req, res, next) {
-    if (!req.body.student || req.body.student.length == 0) {
+    if (!req.body.students || req.body.students.length == 0) {
         _global.sendError(res, null, "student object is required");
         return console.log("student object is required");
     }
@@ -61,7 +61,7 @@ router.post('/verify-face', function (req, res, next) {
         return console.log("Attendance image is required");
     }
 
-    var student = req.body.student;
+    var student = req.body.students;
     var attendance_id = req.body.attendance_id;
     var attendance_type = req.body.attendance_type;
     var attendance_img = req.body.attendance_img;
