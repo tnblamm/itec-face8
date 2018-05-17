@@ -1203,6 +1203,15 @@ var seeding_postgres = function(res) {
                 });
             },
             function(callback) {
+                connection.query(format('INSERT INTO students (id,stud_id,class_id) VALUES %L', insert_students), function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
                 connection.query(format('INSERT INTO classes (name,email,program_id) VALUES %L', insert_classes), function(error, results, fields) {
                     if (error) {
                         callback(error);
@@ -1407,81 +1416,9 @@ var seeding_admin = function(res) {
     });
 }
 
-var seeding_student_postgres = function(res) {
-    pool_postgres.connect(function(error, connection, done) {
-        for (var i = 0; i < insert_students; i++){
-            async.auto({
-                getPersonIdFromStudentArray: function(callback){
-                    var current_student = insert_students[i];
-                    var id = current_student[0];
-                    var stud_id = current_student[1];
-                    var dataAPI = {
-                        baseUrl: 'https://westcentralus.api.cognitive.microsoft.com',
-                        uri: `/face/v1.0/largepersongroups/${_global.largePersonGroup}/persons`,
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Ocp-Apim-Subscription-Key': `${_global.faceApiKey}`
-                        },
-                        method: 'POST',
-                        body: {
-                            "name": id,
-                            "userData": stud_id
-                        }
-                    }
-                    callback(null,{'current_student':current_student, 'dataAPI': dataAPI});
-                },
-                getPersonIdFromAzure: ['getPersonIdFromStudentArray' ,function(callback, results){
-                    var dataAPI = results['getPersonIdFromStudentArray'].dataAPI;
-                    requestAPI(dataAPI, function (error, result) {
-                        if (error) {
-                            _global.sendError(res, null, "Unknown Error");
-                            return;
-                        }
-                        callback(null, result['personId']);
-                    });
-                }],
-                insertPersonToTable: ['getPersonIdFromStudentArray', 'getPersonIdFromAzure', function(callback, results){
-                    var person_id = results['getPersonIdFromAzure'];
-                    var current_student = results['getPersonIdFromStudentArray'].current_student;
-                    var id = current_student[0];
-                    var stud_id = current_student[1];
-                    var class_id = current_student[2];
-                    var new_student = [[
-                        id,
-                        stud_id,
-                        class_id,
-                        person_id
-                    ]]
-                    connection.query(format('INSERT INTO students (id,stud_id,class_id, person_id) VALUES %L', new_student), function(error, results, fields) {
-                        console.log('Success insert student')
-                        if (error) {
-                            callback('Error insert to table students', null);
-                        }
-                        callback(null,{'status':'200', 'msg':'Successfully inserted student'});
-                    });
-                }]
-            }, function(error) {
-                if (error) {
-                    console.log(error);
-                    done(error);
-                } else {
-                    console.log('success insert student seeding!---------------------------------------');
-                    res.send({ result: 'success', message: 'success seeding student' });
-                    done();
-                }
-            });
-        }
-    });
-};
-
 router.get('/', function(req, res, next) {
     //seeding_mysql(res);
     seeding_postgres(res);
-});
-
-router.get('/student', function(req, res, next) {
-    //seeding_mysql(res);
-    seeding_student_postgres(res);
 });
 
 router.get('/admin', function(req, res, next) {

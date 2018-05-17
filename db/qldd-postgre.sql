@@ -42,6 +42,8 @@ CREATE TABLE attendance (
   created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
   closed boolean DEFAULT FALSE,
+  start_week_date bigint,
+  end_week_date bigint,
   PRIMARY KEY (id)
 );
 
