@@ -33,6 +33,7 @@ export class StudentsComponent implements OnInit {
     public newLastName: string = "";
     public newPhone: string = "";
     public newEmail: string = "";
+    public newEmailDomain: string = "";
     public newCode: string = "";
     public newClass: number = 0;
     public newProgram: number = 0;
@@ -80,11 +81,11 @@ export class StudentsComponent implements OnInit {
         this.router.navigate(['/students/', id]);
     }
     onChangeStudentCode(){
-        this.newEmail = this.newCode + "@student.hcmus.edu.vn";
+        this.newEmail = this.newCode + this.newEmailDomain;
     }
     public onOpenAddStudent() {
-        this.newProgram = this.programs.length > 0 ? this.new_programs[this.new_programs.length - 1].id : 0;
-        this.newEmail = "@student.hcmus.edu.vn";
+        this.newProgram = this.programs.length > 0 ? this.new_programs[0].id : 0;
+        this.newEmail = this.programs.length > 0 ? this.new_programs[0].email_domain: '';
         this.onChangeNewProgram();
         jQuery("#addStudentModal").modal("show");
     }
@@ -116,7 +117,18 @@ export class StudentsComponent implements OnInit {
                 this.new_classes.push(this.classes[i]);
             }
         }
+        this.onChangeEmailDomain();
         this.newClass = this.new_classes[0].id;
+    }
+
+    public onChangeEmailDomain(){
+        for (var i = 0; i < this.programs.length; i++) {
+            if (this.programs[i].id == this.newProgram){
+                this.newEmail = "@" + this.programs[i].email_domain;
+                this.newEmailDomain = "@" + this.programs[i].email_domain;
+                break;
+            }
+        }
     }
 
     @ViewChild(ImportModalComponent)

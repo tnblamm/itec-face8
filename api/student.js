@@ -524,6 +524,7 @@ router.post('/import', function (req, res, next) {
             return console.log(error);
         }
         var class_id = 0;
+        var email_domain = '';
         async.series([
             //Start transaction
             function (callback) {
@@ -549,7 +550,8 @@ router.post('/import', function (req, res, next) {
                                         //program not found
                                         callback({ message: 'Program not found' });
                                     } else {
-                                        var email = class_name.toLowerCase() + '@student.hcmus.edu.vn';
+                                        email_domain = result.rows[0].email_domain;
+                                        var email = class_name.toLowerCase() + '@' + email_domain;
                                         var new_class = [[
                                             class_name,
                                             email,
@@ -603,7 +605,7 @@ router.post('/import', function (req, res, next) {
                                     var new_user = [[
                                         _global.getFirstName(student.name),
                                         _global.getLastName(student.name),
-                                        _global.getEmailStudentApcs(student.stud_id),
+                                        _global.getEmailStudentApcs(student.stud_id) + '@' + email_domain,
                                         student.phone,
                                         _global.role.student,
                                         bcrypt.hashSync(student.stud_id.toString(), 10),

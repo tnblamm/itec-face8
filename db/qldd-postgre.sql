@@ -109,6 +109,7 @@ CREATE TABLE feedbacks (
   replied boolean DEFAULT FALSE,
   replied_at timestamp with time zone DEFAULT NULL,
   created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+  feedback_reply text,
   PRIMARY KEY (id)
 );
 
@@ -137,6 +138,7 @@ CREATE TABLE programs (
   id serial NOT NULL,
   name varchar(50) NOT NULL DEFAULT 'missing program name',
   code varchar(10) DEFAULT '',
+  email_domain character varying(50),
   PRIMARY KEY (id)
 );
 
