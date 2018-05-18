@@ -36,10 +36,11 @@ export class ProgramsService {
 
     
     public addProgramUrl = this.appConfig.apiHost + '/program/create';
-    public addProgram(name, code): Observable < { result: string, message: string } > {
+    public addProgram(name, code, email_domain): Observable < { result: string, message: string } > {
         var params = {
             'name': name,
             'code': code,
+            'email_domain': email_domain
         };
         let authToken = this.authService.token;
         let headers = new Headers();

@@ -93,6 +93,8 @@
                     <label>Content:</label> {{feedback_content}}<br>
                     <label *ngIf="authService.current_user.role_id == appService.userType.teacher">Reply: </label>
                     <textarea rows="3" *ngIf="authService.current_user.role_id == appService.userType.teacher" [(ngModel)]="reply_content" autosize class="form-control"></textarea>
+                    <label *ngIf="authService.current_user.role_id == appService.userType.student">Reply Content: </label>
+                    <textarea rows="3" *ngIf="authService.current_user.role_id == appService.userType.student" autosize class="form-control" disabled>{{ feedback_reply }}</textarea>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger pull-left" (click)="deleteFeedback()">Delete</button>

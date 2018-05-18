@@ -9,6 +9,7 @@ const pool_postgres = new pg.Pool(_global.db_postgres);
 var connection = mysql.createConnection(_global.db);
 var pool = mysql.createPool(_global.db);
 var bcrypt = require('bcrypt');
+var validator = require('validator');
 
 router.post('/list', function(req, res, next) {
     var searchText = req.body.searchText;
@@ -73,9 +74,20 @@ router.post('/create', function(req, res, next) {
         _global.sendError(res, null, "Code is required");
         return;
     }
+    if (req.body.email_domain == undefined || req.body.email_domain == '') {
+        _global.sendError(res, null, "Email domain is required");
+        return;
+    }
+    if (!validator.isEmail(req.body.email_domain)){
+        _global.sendError(res, null, "Email domain is not a valid email");
+        return;
+    }
+    var email_domain = req.body.email_domain;
+    var domain = email_domain.replace(/.*@/, "");
     var program = [[
         req.body.name,
-        req.body.code
+        req.body.code,
+        domain
     ]];
     pool_postgres.connect(function(error, connection, done) {
         if (error) {
@@ -83,7 +95,7 @@ router.post('/create', function(req, res, next) {
             done();
             return console.log(error);
         }
-        connection.query(format(`SELECT * FROM programs WHERE code = %L OR name = %L`,program[0][0],program[0][1]),function(error, result, fields) {
+        connection.query(format(`SELECT * FROM programs WHERE code = %L OR name = %L`,program[0][1],program[0][0]),function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
                 done();
@@ -94,7 +106,7 @@ router.post('/create', function(req, res, next) {
                 done();
                 return console.log("Program's existed");
             }else{
-                connection.query(format(`INSERT INTO programs (name,code) VALUES %L`,program),function(error, rows, fields) {
+                connection.query(format(`INSERT INTO programs (name,code, email_domain) VALUES %L`,program),function(error, rows, fields) {
                     if (error) {
                         _global.sendError(res, error.message);
                         done();

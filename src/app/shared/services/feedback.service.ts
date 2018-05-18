@@ -87,15 +87,26 @@ export class FeedbackService {
     }
 
     public getFeedbackHistoryUrl = this.appConfig.apiHost + '/feedback/history';
-    public getFeedbackHistory(from_to : number,search_text:string, category:number, status : number, page: number = 1, limit: number = -1): Observable < { result: string,total_items: number, feedbacks: Array<any>, message:string} > {
-        var params = {
-            'from_to' : from_to,
-            'category' : category,
-            'status' : status,
-            'search_text': search_text,
-            'page': page,
-            'limit': limit,
-        };
+    public getFeedbackHistory(from_to : number,search_text:string, category:number, status : any, page: number = 1, limit: number = -1): Observable < { result: string,total_items: number, feedbacks: Array<any>, message:string} > {
+        var params = {};
+        if (status != null){
+            params = {
+                'from_to' : from_to,
+                'category' : category,
+                'status' : status,
+                'search_text': search_text,
+                'page': page,
+                'limit': limit,
+            }
+        } else {
+            params = {
+                'from_to' : from_to,
+                'category' : category,
+                'search_text': search_text,
+                'page': page,
+                'limit': limit,
+            }
+        }
         let authToken = this.authService.token;
         let headers = new Headers();
         headers.append('x-access-token', `${authToken}`);

@@ -144,8 +144,9 @@ router.post('/send', function(req, res, next) {
                 return console.log(error);
             }
             if(from_id){
-                connection.query(format(`INSERT INTO notifications (to_id,message,object_id,type) VALUES %L RETURNING id`, [[
+                connection.query(format(`INSERT INTO notifications (to_id,from_id,message,object_id,type) VALUES %L RETURNING id`, [[
                         to_id,
+                        req.decoded.id,
                         'sent a feedback',
                         result.rows[0].id,
                         _global.notification_type.send_feedback
@@ -161,9 +162,8 @@ router.post('/send', function(req, res, next) {
                     done();
                 });
             }else{
-                connection.query(format(`INSERT INTO notifications (to_id,from_id,message,object_id,type) VALUES %L RETURNING id`, [[
+                connection.query(format(`INSERT INTO notifications (to_id,message,object_id,type) VALUES %L RETURNING id`, [[
                         to_id,
-                        req.decoded.id,
                         'sent a feedback',
                         result.rows[0].id,
                         _global.notification_type.send_feedback
@@ -184,12 +184,18 @@ router.post('/send', function(req, res, next) {
 });
 
 router.post('/history', function(req, res, next) {
+    if (!req.body){
+        _global.sendError(res,null);
+        done();
+        return console.log(error); 
+    }
     var user_id = req.decoded.id;
+    console.log(user_id);
     var from_to = req.body.from_to;
     var search_text = req.body.search_text ? req.body.search_text : '';
     var page = req.body.page != null ? req.body.page : _global.default_page;
     var limit = req.body.limit != null ? req.body.limit : _global.detail_limit;
-    var status = req.body.status ? req.body.status : 0;
+    var status = req.body.status ? req.body.status : '';
     var category = req.body.category ? req.body.category : 0;
 
     pool_postgres.connect(function(error, connection, done) {
@@ -200,55 +206,112 @@ router.post('/history', function(req, res, next) {
         }
 
         var query = '';
+        var query_student = '';
         if(from_to == 0){
-            query = `SELECT * , (SELECT CONCAT(first_name,' ',last_name) FROM users WHERE users.id = feedbacks.to_id) as _to  FROM feedbacks
-        WHERE from_id = %L AND replied = %L `;
-        }else{
+            if (status){
+                query = `SELECT * , (SELECT CONCAT(first_name,' ',last_name) FROM users WHERE users.id = feedbacks.to_id) as _to  FROM feedbacks
+                WHERE from_id = %L AND replied = %L `;
+            } else {
+                query_student = `SELECT * , (SELECT CONCAT(first_name,' ',last_name) FROM users WHERE users.id = feedbacks.to_id) as _to  FROM feedbacks
+                WHERE from_id = %L`;
+            }  
+        } else {
             query = `SELECT *, (SELECT CONCAT(users.first_name,' ',users.last_name,E'\r\n',users.email) FROM users WHERE users.id = feedbacks.from_id) as from FROM feedbacks
-        WHERE to_id = %L AND replied = %L `;
+            WHERE to_id = %L AND replied = %L `;
         }
         if(category != 0){
-            query += ' AND category = ' + category ;
-        }
-        query += ` ORDER BY feedbacks.read, feedbacks.created_at DESC`;
-        connection.query(format(query,user_id,status), function(error, result, fields) {
-            if (error) {
-                _global.sendError(res, null, error);
-                done();
-                return console.log(error);
-            }
-
-            var feedbacks = result.rows;
-            for(var i = 0 ; i < feedbacks.length; i++){
-                if(feedbacks[i]._to == null){
-                    feedbacks[i]._to = 'Giáo vụ';
-                }
-            }
-            var search_list = [];
-            if (search_text == null) {
-                search_list = feedbacks;
+            if (status){
+                query += ' AND category = ' + category ;
             } else {
-                for (var i = 0; i < feedbacks.length; i++) {
-                    if (feedbacks[i].title.toLowerCase().indexOf(search_text.toLowerCase()) != -1) {
-                        search_list.push(feedbacks[i]);
+                query_student += ' AND category = ' + category ;
+            }
+        }
+        
+        if (status){
+            query += ` ORDER BY feedbacks.read, feedbacks.created_at DESC`;
+        } else {
+            query_student += ` ORDER BY feedbacks.read, feedbacks.created_at DESC`;
+        }
+
+        if (status){
+            connection.query(format(query,user_id,status), function(error, result, fields) {
+                if (error) {
+                    _global.sendError(res, null, error);
+                    done();
+                    return console.log(error);
+                }
+                console.log(result.rows);
+                var feedbacks = result.rows;
+                console.log(feedbacks);
+                for(var i = 0 ; i < feedbacks.length; i++){
+                    if(feedbacks[i]._to == null){
+                        feedbacks[i]._to = 'Giáo vụ';
                     }
                 }
-            }
-            if (limit != -1) {
-                res.send({
-                    result: 'success',
-                    total_items: search_list.length,
-                    feedbacks: _global.filterListByPage(page, limit, search_list)
-                });
-            } else {
-                res.send({
-                    result: 'success',
-                    total_items: search_list.length,
-                    feedbacks: search_list
-                });
-            }
-            done();
-        });
+                var search_list = [];
+                if (search_text == null) {
+                    search_list = feedbacks;
+                } else {
+                    for (var i = 0; i < feedbacks.length; i++) {
+                        if (feedbacks[i].title.toLowerCase().indexOf(search_text.toLowerCase()) != -1) {
+                            search_list.push(feedbacks[i]);
+                        }
+                    }
+                }
+                if (limit != -1) {
+                    res.send({
+                        result: 'success',
+                        total_items: search_list.length,
+                        feedbacks: _global.filterListByPage(page, limit, search_list)
+                    });
+                } else {
+                    res.send({
+                        result: 'success',
+                        total_items: search_list.length,
+                        feedbacks: search_list
+                    });
+                }
+                done();
+            });
+        } else {
+            connection.query(format(query_student,user_id), function(error, result, fields) {
+                if (error) {
+                    _global.sendError(res, null, error);
+                    done();
+                    return console.log(error);
+                }
+                var feedbacks = result.rows;
+                for(var i = 0 ; i < feedbacks.length; i++){
+                    if(feedbacks[i]._to == null){
+                        feedbacks[i]._to = 'Giáo vụ';
+                    }
+                }
+                var search_list = [];
+                if (search_text == null) {
+                    search_list = feedbacks;
+                } else {
+                    for (var i = 0; i < feedbacks.length; i++) {
+                        if (feedbacks[i].title.toLowerCase().indexOf(search_text.toLowerCase()) != -1) {
+                            search_list.push(feedbacks[i]);
+                        }
+                    }
+                }
+                if (limit != -1) {
+                    res.send({
+                        result: 'success',
+                        total_items: search_list.length,
+                        feedbacks: _global.filterListByPage(page, limit, search_list)
+                    });
+                } else {
+                    res.send({
+                        result: 'success',
+                        total_items: search_list.length,
+                        feedbacks: search_list
+                    });
+                }
+                done();
+            });
+        }
     });
 });
 
@@ -289,7 +352,7 @@ router.post('/send-reply', function(req, res, next) {
             var title = result.rows[0].title;
             var last_name = result.rows[0]._last_name;
             var reply_to = result.rows[0].from_id;
-            connection.query(format('UPDATE feedbacks SET replied = TRUE WHERE id = %L', feedback_id), function(error, result, fields) {
+            connection.query(format('UPDATE feedbacks SET replied = TRUE, feedback_reply = %L, replied_at = %L  WHERE id = %L', reply_content,new Date(),feedback_id), function(error, result, fields) {
                 if (error) {
                     res.send({ result: 'failure', message: 'Reply Failed' });
                     done();

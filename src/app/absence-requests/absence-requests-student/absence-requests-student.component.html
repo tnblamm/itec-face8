@@ -37,6 +37,8 @@
                         <td *ngIf="request.status == appService.absence_request_status.new.id"></td>
                         <td *ngIf="request.status != appService.absence_request_status.new.id">{{request.updated_at | date: 'short'}}</td>
                         <td *ngIf="request.status == appService.absence_request_status.new.id"><button class="btn btn-danger btn-sm" (click)="onCancelRequest(request.id)">Cancel</button></td>
+                        <td *ngIf="request.status == appService.absence_request_status.accepted.id">{{ appService.absence_request_status.accepted.title }}</td>
+                        <td *ngIf="request.status == appService.absence_request_status.rejected.id">{{ appService.absence_request_status.rejected.title }}</td>
                     </tr>
                 </tbody>
             </table>

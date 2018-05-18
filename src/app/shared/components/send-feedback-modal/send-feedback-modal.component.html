@@ -24,7 +24,7 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="form-group" *ngIf="selected_receiver">
+                                <div class="form-group" *ngIf="selected_receiver && selected_receiver == 1">
                                     <label class="control-label col-md-3 col-sm-3 col-xs-12"> Lecturer/TA* </label>
                                     <div class="col-md-9 col-sm-9 col-xs-12">
                                         <select class="form-control" name="teacher" [(ngModel)]="selected_teacher">

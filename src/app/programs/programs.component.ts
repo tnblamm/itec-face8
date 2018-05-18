@@ -48,20 +48,23 @@ export class ProgramsComponent implements OnInit {
     }
 
     public new_program_name = '';
-	public new_program_code = '';
+    public new_program_code = '';
+    public new_email_domain = '';
 	public onAddProgram(){
 		this.new_program_name = '';
-		this.new_program_code = '';
+        this.new_program_code = '';
+        this.new_email_domain = '';
 		jQuery("#addProgramModal").modal("show");
 	}
 	public confirmAddProgram(){
-		this.programService.addProgram(this.new_program_name,this.new_program_code).subscribe(result=>{
+		this.programService.addProgram(this.new_program_name,this.new_program_code, this.new_email_domain).subscribe(result=>{
         	this.apiResult = result.result;
             this.apiResultMessage = result.message;
             if (result.result == 'success') {
                 this.getProgramList();
                 this.new_program_name = '';
-				this.new_program_code = '';
+                this.new_program_code = '';
+                this.new_email_domain = '';
                 jQuery("#addProgramModal").modal("hide");
             }
         	this.appService.showPNotify(this.apiResult,this.apiResultMessage,this.apiResult == 'success' ? 'success' : 'error');
