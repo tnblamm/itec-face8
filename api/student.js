@@ -605,7 +605,7 @@ router.post('/import', function (req, res, next) {
                                     var new_user = [[
                                         _global.getFirstName(student.name),
                                         _global.getLastName(student.name),
-                                        _global.getEmailStudentApcs(student.stud_id) + '@' + email_domain,
+                                        student.stud_id + '@' + email_domain,
                                         student.phone,
                                         _global.role.student,
                                         bcrypt.hashSync(student.stud_id.toString(), 10),
@@ -627,7 +627,7 @@ router.post('/import', function (req, res, next) {
                                                 } else {
                                                     new_student_list.push({
                                                         name: _global.getLastName(student.name),
-                                                        email: _global.getEmailStudentApcs(student.stud_id)
+                                                        email: student.stud_id + '@' + email_domain
                                                     });
                                                     callback();
                                                 }
