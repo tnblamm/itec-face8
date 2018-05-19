@@ -79,10 +79,6 @@ export class FeedbackHistoryComponent implements OnInit {
             }
         }
         jQuery('#feedbackDetailModal').modal('show');
-        this.feebackService.readFeedbacks(this.feedbacks[index].id).subscribe(result=>{
-            this.getFeedbacks();
-            jQuery('#feedbackDetailModal').modal('show');
-        },error=>{this.appService.showPNotify('failure', "Server Error! Can't read feedbacks", 'error');});
     }
     public onSearchChange(){
         if(this.search_text.length > 3 || this.search_text.length == 0){
