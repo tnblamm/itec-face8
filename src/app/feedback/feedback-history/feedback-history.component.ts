@@ -83,7 +83,7 @@ export class FeedbackHistoryComponent implements OnInit {
             }
         }
         jQuery('#feedbackDetailModal').modal('show');
-        if (this.from_to == 0){
+        if (this.from_to == 1){
             this.feebackService.readFeedbacks(this.feedbacks[index].id).subscribe(result=>{
                 this.getFeedbacks();
                 jQuery('#feedbackDetailModal').modal('show');

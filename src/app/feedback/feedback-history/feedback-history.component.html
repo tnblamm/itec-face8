@@ -93,8 +93,11 @@
                     <label>Content:</label> {{feedback_content}}<br>
                     <label *ngIf="authService.current_user.role_id == appService.userType.teacher && from_to == 1">Reply: </label>
                     <textarea rows="3" *ngIf="authService.current_user.role_id == appService.userType.teacher && from_to == 1" [(ngModel)]="reply_content" autosize class="form-control"></textarea>
+                    <textarea rows="3" *ngIf="authService.current_user.role_id == appService.userType.teacher && from_to == 1 && selected_status == 1" autosize class="form-control">{{ feedback_reply }}</textarea>
+
                     <label *ngIf="authService.current_user.role_id == appService.userType.teacher && from_to == 0">Reply Content: </label>
                     <textarea rows="3" *ngIf="authService.current_user.role_id == appService.userType.teacher && from_to == 0" autosize class="form-control" readonly>{{ feedback_reply }}</textarea>
+
                     <label *ngIf="authService.current_user.role_id == appService.userType.student">Reply Content: </label>
                     <textarea rows="3" *ngIf="authService.current_user.role_id == appService.userType.student" autosize class="form-control" readonly>{{ feedback_reply }}</textarea>
                 </div>
