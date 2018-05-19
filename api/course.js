@@ -13,6 +13,8 @@ var nodemailer = require('nodemailer');
 var bcrypt = require('bcrypt');
 var teacher_list = [];
 
+
+
 router.get('/detail/:id', function(req, res, next) {
     var id = req.params['id'];
     pool_postgres.connect(function(error, connection, done) {
@@ -299,6 +301,7 @@ router.post('/add', function(req, res, next) {
                                                             temp.push(result.rows[i].id);
                                                             new_student_enroll_course.push(temp);
                                                         }
+                                                        console.log('lan 1',new_student_enroll_course);
                                                         callback();
                                                     }
                                                 });
@@ -315,28 +318,30 @@ router.post('/add', function(req, res, next) {
                                                         } else {
                                                             if (result.rowCount == 0) {
                                                                 //new student to system
+                                                                var new_email = student.stud_id + "@student.hcmus.edu.vn";
+                                                                var new_password = new_email.split('@')[0];
                                                                 var new_user = [[
                                                                     _global.getFirstName(student.name),
                                                                     _global.getLastName(student.name),
-                                                                    student.stud_id + '@student.hcmus.edu.vn',
+                                                                    new_email,
                                                                     student.phone,
                                                                     _global.role.student,
-                                                                    bcrypt.hashSync(student.code, 10),
+                                                                    bcrypt.hashSync(new_password, 10)
                                                                 ]];
                                                                 new_student_list.push({
                                                                     name: _global.getLastName(student.name),
-                                                                    email : student.stud_id + '@student.hcmus.edu.vn'
+                                                                    email : student.stud_id + "@student.hcmus.edu.vn"
                                                                 });
                                                                 connection.query(format(`INSERT INTO users (first_name,last_name,email,phone,role_id,password) VALUES %L RETURNING id`, new_user), function(error, result, fields) {
                                                                     if (error) {
                                                                         callback(error);
                                                                     } else {
                                                                         var student_id = result.rows[0].id;
-                                                                        var new_student = [
+                                                                        var new_student = [[
                                                                             student_id,
                                                                             student.stud_id,
-                                                                            _class.classId,
-                                                                        ];
+                                                                            _class.classId
+                                                                        ]];
                                                                         connection.query(format(`INSERT INTO students (id,stud_id,class_id) VALUES %L`, new_student), function(error, result, fields) {
                                                                             if (error) {
                                                                                 callback(error);
@@ -345,17 +350,14 @@ router.post('/add', function(req, res, next) {
                                                                                 temp.push(class_has_course_id);
                                                                                 temp.push(student_id);
                                                                                 new_student_enroll_course.push(temp);
+                                                                                console.log('lan 2',new_student_enroll_course);
                                                                                 callback();
                                                                             }
                                                                         });
                                                                     }
                                                                 });
                                                             } else {
-                                                                //old student
-                                                                var temp = [];
-                                                                temp.push(class_has_course_id);
-                                                                temp.push(result.rows[0].id);
-                                                                new_student_enroll_course.push(temp);
+                                                                console.log('lan 3',new_student_enroll_course);
                                                                 callback();
                                                             }
                                                         }
@@ -372,6 +374,7 @@ router.post('/add', function(req, res, next) {
                                         if (error) {
                                             callback(error);
                                         } else {
+                                            console.log('cuoi cung',new_student_enroll_course);
                                             connection.query(format(`INSERT INTO student_enroll_course (class_has_course_id,student_id) VALUES %L`, new_student_enroll_course), function(error, result, fields) {
                                                 if (error) {
                                                     console.log(error.message + ' at insert student_enroll_course');
@@ -704,7 +707,7 @@ router.post('/import', function(req, res, next) {
                     } else {
                         if (result.rowCount == 0) {
                             //new class => insert
-                            var email = class_name.toLowerCase() + '@student.hcmus.edu.vn';
+                            var email = class_name.toLowerCase() + "@student.hcmus.edu.vn";
                             var new_class = [[
                                 class_name,
                                 email,
