@@ -21,7 +21,11 @@ export class FeedbackHistoryComponent implements OnInit {
             if (this.from_to == 0){
                 this.selected_status = null;
             } else {
-                this.selected_status = 0;
+                if (this.selected_status == 1){
+                    this.selected_status = 1;
+                } else {
+                    this.selected_status = 0;
+                }
             }
             this.feebackService.getFeedbackHistory(this.from_to, this.search_text, this.selected_category, this.selected_status,this.pageNumber, this.itemsPerPage).subscribe(result=>{
                 this.feedbacks = result.feedbacks;
@@ -79,6 +83,10 @@ export class FeedbackHistoryComponent implements OnInit {
             }
         }
         jQuery('#feedbackDetailModal').modal('show');
+        this.feebackService.readFeedbacks(this.feedbacks[index].id).subscribe(result=>{
+            this.getFeedbacks();
+            jQuery('#feedbackDetailModal').modal('show');
+        },error=>{this.appService.showPNotify('failure', "Server Error! Can't read feedbacks", 'error');});
     }
     public onSearchChange(){
         if(this.search_text.length > 3 || this.search_text.length == 0){
