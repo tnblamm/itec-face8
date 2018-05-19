@@ -190,12 +190,13 @@ router.post('/history', function(req, res, next) {
         return console.log(error); 
     }
     var user_id = req.decoded.id;
-    console.log(user_id);
+    console.log('user',user_id);
     var from_to = req.body.from_to;
     var search_text = req.body.search_text ? req.body.search_text : '';
     var page = req.body.page != null ? req.body.page : _global.default_page;
     var limit = req.body.limit != null ? req.body.limit : _global.detail_limit;
     var status = req.body.status ? req.body.status : '';
+    console.log('status',status);
     var category = req.body.category ? req.body.category : 0;
 
     pool_postgres.connect(function(error, connection, done) {
@@ -213,7 +214,7 @@ router.post('/history', function(req, res, next) {
                 WHERE from_id = %L AND replied = %L `;
             } else {
                 query_student = `SELECT * , (SELECT CONCAT(first_name,' ',last_name) FROM users WHERE users.id = feedbacks.to_id) as _to  FROM feedbacks
-                WHERE from_id = %L`;
+                WHERE from_id = %L `;
             }  
         } else {
             query = `SELECT *, (SELECT CONCAT(users.first_name,' ',users.last_name,E'\r\n',users.email) FROM users WHERE users.id = feedbacks.from_id) as from FROM feedbacks
@@ -230,7 +231,11 @@ router.post('/history', function(req, res, next) {
         if (status){
             query += ` ORDER BY feedbacks.read, feedbacks.created_at DESC`;
         } else {
-            query_student += ` ORDER BY feedbacks.read, feedbacks.created_at DESC`;
+            if (from_to == 1){
+                query += ` ORDER BY feedbacks.read, feedbacks.created_at DESC`;
+            } else {
+                query_student += ` ORDER BY feedbacks.read, feedbacks.created_at DESC`;
+            }
         }
 
         if (status){
@@ -240,9 +245,7 @@ router.post('/history', function(req, res, next) {
                     done();
                     return console.log(error);
                 }
-                console.log(result.rows);
                 var feedbacks = result.rows;
-                console.log(feedbacks);
                 for(var i = 0 ; i < feedbacks.length; i++){
                     if(feedbacks[i]._to == null){
                         feedbacks[i]._to = 'Giáo vụ';
@@ -274,43 +277,83 @@ router.post('/history', function(req, res, next) {
                 done();
             });
         } else {
-            connection.query(format(query_student,user_id), function(error, result, fields) {
-                if (error) {
-                    _global.sendError(res, null, error);
-                    done();
-                    return console.log(error);
-                }
-                var feedbacks = result.rows;
-                for(var i = 0 ; i < feedbacks.length; i++){
-                    if(feedbacks[i]._to == null){
-                        feedbacks[i]._to = 'Giáo vụ';
+            if (from_to == 1){
+                connection.query(format(query,user_id,false), function(error, result, fields) {
+                    if (error) {
+                        _global.sendError(res, null, error);
+                        done();
+                        return console.log(error);
                     }
-                }
-                var search_list = [];
-                if (search_text == null) {
-                    search_list = feedbacks;
-                } else {
-                    for (var i = 0; i < feedbacks.length; i++) {
-                        if (feedbacks[i].title.toLowerCase().indexOf(search_text.toLowerCase()) != -1) {
-                            search_list.push(feedbacks[i]);
+                    var feedbacks = result.rows;
+                    for(var i = 0 ; i < feedbacks.length; i++){
+                        if(feedbacks[i]._to == null){
+                            feedbacks[i]._to = 'Giáo vụ';
                         }
                     }
-                }
-                if (limit != -1) {
-                    res.send({
-                        result: 'success',
-                        total_items: search_list.length,
-                        feedbacks: _global.filterListByPage(page, limit, search_list)
-                    });
-                } else {
-                    res.send({
-                        result: 'success',
-                        total_items: search_list.length,
-                        feedbacks: search_list
-                    });
-                }
-                done();
-            });
+                    var search_list = [];
+                    if (search_text == null) {
+                        search_list = feedbacks;
+                    } else {
+                        for (var i = 0; i < feedbacks.length; i++) {
+                            if (feedbacks[i].title.toLowerCase().indexOf(search_text.toLowerCase()) != -1) {
+                                search_list.push(feedbacks[i]);
+                            }
+                        }
+                    }
+                    if (limit != -1) {
+                        res.send({
+                            result: 'success',
+                            total_items: search_list.length,
+                            feedbacks: _global.filterListByPage(page, limit, search_list)
+                        });
+                    } else {
+                        res.send({
+                            result: 'success',
+                            total_items: search_list.length,
+                            feedbacks: search_list
+                        });
+                    }
+                    done();
+                });
+            } else {
+                connection.query(format(query_student,user_id), function(error, result, fields) {
+                    if (error) {
+                        _global.sendError(res, null, error);
+                        done();
+                        return console.log(error);
+                    }
+                    var feedbacks = result.rows;
+                    for(var i = 0 ; i < feedbacks.length; i++){
+                        if(feedbacks[i]._to == null){
+                            feedbacks[i]._to = 'Giáo vụ';
+                        }
+                    }
+                    var search_list = [];
+                    if (search_text == null) {
+                        search_list = feedbacks;
+                    } else {
+                        for (var i = 0; i < feedbacks.length; i++) {
+                            if (feedbacks[i].title.toLowerCase().indexOf(search_text.toLowerCase()) != -1) {
+                                search_list.push(feedbacks[i]);
+                            }
+                        }
+                    }
+                    if (limit != -1) {
+                        res.send({
+                            result: 'success',
+                            total_items: search_list.length,
+                            feedbacks: _global.filterListByPage(page, limit, search_list)
+                        });
+                    } else {
+                        res.send({
+                            result: 'success',
+                            total_items: search_list.length,
+                            feedbacks: search_list
+                        });
+                    }
+                    done();
+                });
+            }
         }
     });
 });

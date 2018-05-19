@@ -91,14 +91,16 @@
                     <label>Title:</label> {{feedback_title}}<br>
                     <label>Category:</label> {{feedback_category}}<br>
                     <label>Content:</label> {{feedback_content}}<br>
-                    <label *ngIf="authService.current_user.role_id == appService.userType.teacher">Reply: </label>
-                    <textarea rows="3" *ngIf="authService.current_user.role_id == appService.userType.teacher" [(ngModel)]="reply_content" autosize class="form-control"></textarea>
+                    <label *ngIf="authService.current_user.role_id == appService.userType.teacher && from_to == 1">Reply: </label>
+                    <textarea rows="3" *ngIf="authService.current_user.role_id == appService.userType.teacher && from_to == 1" [(ngModel)]="reply_content" autosize class="form-control"></textarea>
+                    <label *ngIf="authService.current_user.role_id == appService.userType.teacher && from_to == 0">Reply Content: </label>
+                    <textarea rows="3" *ngIf="authService.current_user.role_id == appService.userType.teacher && from_to == 0" autosize class="form-control" readonly>{{ feedback_reply }}</textarea>
                     <label *ngIf="authService.current_user.role_id == appService.userType.student">Reply Content: </label>
-                    <textarea rows="3" *ngIf="authService.current_user.role_id == appService.userType.student" autosize class="form-control" disabled>{{ feedback_reply }}</textarea>
+                    <textarea rows="3" *ngIf="authService.current_user.role_id == appService.userType.student" autosize class="form-control" readonly>{{ feedback_reply }}</textarea>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger pull-left" (click)="deleteFeedback()">Delete</button>
-                    <button *ngIf="authService.current_user.role_id == appService.userType.teacher" type="button" class="btn btn-primary" data-dismiss="modal" (click)="sendReply()">Reply</button>
+                    <button *ngIf="authService.current_user.role_id == appService.userType.teacher && from_to == 1" type="button" class="btn btn-primary" data-dismiss="modal" (click)="sendReply()">Reply</button>
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                 </div>
             </div>

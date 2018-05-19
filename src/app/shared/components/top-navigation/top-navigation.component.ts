@@ -27,9 +27,11 @@ export class TopNavigationComponent implements OnInit {
     	socketService.consumeEventOnNotificationPushed();
     	socketService.invokeNotificationPushed.subscribe(result=>{
     		if (this.authService.current_user.id == result['to_id']) {
+				console.log('Get notification', result['to_id']);
                 this.getNotification();
             }
-            if(this.authService.current_user.role_id == this.appService.userType.staff && result['to_id'] == 0){
+            if(this.authService.current_user.role_id == this.appService.userType.staff && result['to_id'] == null){
+				console.log('Get notification on staff', result['to_id']);
 				this.getNotification();
             }
         });

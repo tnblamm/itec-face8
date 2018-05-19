@@ -145,13 +145,15 @@ router.post('/forgot-password', function(req, res, next) {
                     done();
                     return console.log("Old password not found. Please use the register link in your email to set up your account.");
                 }
+                var user = result.rows[0];
+                var fullName = `${user.first_name} ${user.last_name}`;
                 var token = jwt.sign({ email: email }, _global.jwt_secret_key, { expiresIn: _global.jwt_reset_password_expire_time });
                 var link = _global.host + '/forgot-password;token=' + token;
                 _global.sendMail(
                     '"Giáo vụ"',
                     email,
                     'Password reset request',
-                    'Hi,'+ student.name + '\r\n' + 
+                    'Hi,'+ fullName + '\r\n' + 
                     'Hi,\r\n' + 
                     'A password reset was requested for your account.To confirm this request, and set a new password for your account, please go to the following web address: \r\n\r\n' +
                      link + 

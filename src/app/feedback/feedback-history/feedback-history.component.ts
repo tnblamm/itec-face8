@@ -18,6 +18,11 @@ export class FeedbackHistoryComponent implements OnInit {
                 this.totalItems = result.total_items;
             },error=>{this.appService.showPNotify('failure', "Server Error! Can't get feedbacks", 'error');});
         } else {
+            if (this.from_to == 0){
+                this.selected_status = null;
+            } else {
+                this.selected_status = 0;
+            }
             this.feebackService.getFeedbackHistory(this.from_to, this.search_text, this.selected_category, this.selected_status,this.pageNumber, this.itemsPerPage).subscribe(result=>{
                 this.feedbacks = result.feedbacks;
                 this.totalItems = result.total_items;
