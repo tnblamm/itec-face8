@@ -23,7 +23,7 @@
                         <div class="form-group">
                             <label class="control-label col-md-3 col-sm-3 col-xs-12">Program</label>
                             <div class="col-md-6 col-sm-6 col-xs-12">
-                            <select class="form-control" name="program" [(ngModel)]="new_class_program">
+                            <select class="form-control" name="program" [(ngModel)]="new_class_program" (ngModelChange)="onChangeEmailDomain()">
                                 <option *ngFor="let program of new_programs" [value]="program.id">{{program.name}}</option>
                             </select>
                             </div>

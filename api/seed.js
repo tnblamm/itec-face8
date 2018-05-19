@@ -27,9 +27,9 @@ var insert_semesters = [
 ];
 //[name,code]
 var insert_programs = [
-    ['Chất lượng cao', 'CLC'],
-    ['Việt Pháp', 'VP'],
-    ['Chương trình tiên tiến', 'CTT'],
+    ['Chất lượng cao', 'CLC', 'student.hcmus.edu.vn'],
+    ['Việt Pháp', 'VP', 'student.hcmus.edu.vn'],
+    ['Chương trình tiên tiến', 'CTT', 'student.hcmus.edu.vn'],
 ];
 //[code,email,program_id]
 var insert_classes = [
@@ -1194,7 +1194,7 @@ var seeding_postgres = function(res) {
                 });
             },
             function(callback) {
-                connection.query(format('INSERT INTO programs (name,code) VALUES %L', insert_programs), function(error, results, fields) {
+                connection.query(format('INSERT INTO programs (name,code, email_domain) VALUES %L', insert_programs), function(error, results, fields) {
                     if (error) {
                         callback(error);
                     } else {

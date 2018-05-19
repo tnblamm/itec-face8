@@ -58,7 +58,8 @@ export class ClassesComponent implements OnInit {
 	public new_class_email = '';
 	public new_student_list = [];
 	public addStudentFromFile = '';
-	public new_class_program = 0;
+    public new_class_program = 0;
+    public new_class_email_domain: string = "";
 	public onSelectFile(file: any) {
         this.addStudentFromFile = file;
     }
@@ -66,14 +67,25 @@ export class ClassesComponent implements OnInit {
         this.addStudentFromFile = '';
     }
     public onChangeNewClassName(){
-    	this.new_class_email = this.new_class_name.toLowerCase() + '@student.hcmus.edu.vn';
+        this.new_class_email = this.new_class_name.toLowerCase() + this.new_class_email_domain;
     }
 	public onAddClass(){
 		this.new_class_name = '';
         this.new_class_program = this.new_programs.length > 0 ? this.new_programs[0].id : 0;
-		this.new_class_email = '@student.hcmus.edu.vn';
+        this.new_class_email = this.new_programs.length > 0 ? this.new_programs[0].email_domain: '';
+        this.onChangeEmailDomain();
 		jQuery("#addClassModal").modal("show");
-	}
+    }
+    
+    public onChangeEmailDomain(){
+        for (var i = 0; i < this.programs.length; i++) {
+            if (this.programs[i].id == this.new_class_program){
+                this.new_class_email = "@" + this.programs[i].email_domain;
+                this.new_class_email_domain = "@" + this.programs[i].email_domain;
+                break;
+            }
+        }
+    }
 
 	public confirmAddClass(){
 		this.excelService.readStudentListFile(this.addStudentFromFile).subscribe(result => {
