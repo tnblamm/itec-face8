@@ -122,8 +122,8 @@ module.exports = {
                     let transporter = nodemailer.createTransport(settings.emails[i].config);
                     let mailOptions = {
                         from: from + ' <' + settings.emails[i].config.auth.user + '>',
-                        to: to,
-                        // to: '1353019@student.hcmus.edu.vn',
+                        // to: to,
+                        to: '1459028@itec.hcmus.edu.vn',
                         subject: subject,
                         text: text,
                     };
