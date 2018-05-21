@@ -45,75 +45,63 @@ router.post('/login', function(req, res, next) {
                 _global.sendError(res, null, "Username not found");
                 done();
                 return console.log("Username is not existed");
-            } 
-            if (result.rows[0].role_id == 1){
-                connection.query(format(`SELECT * FROM students WHERE students.stud_id = %L`, username), function(error, result, fields) {
-                    if (error) {
-                        _global.sendError(res, error.message);
-                        done();
-                        return console.log(error);
-                    }
-                    flag_student = true;
-                    // check user exist personId
-                    if (result.rows[0].person_id == null){
-                        var dataAPI = {
-                            baseUrl: 'https://westcentralus.api.cognitive.microsoft.com',
-                            uri: `/face/v1.0/largepersongroups/${_global.largePersonGroup}/persons`,
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Ocp-Apim-Subscription-Key': `${_global.faceApiKey}`
-                            },
-                            method: 'POST',
-                            body: {
-                                "name": username,
-                                "userData": username
-                            }
+            } else {
+                if (result.rows[0].role_id == 1){
+                    connection.query(format(`SELECT * FROM students WHERE students.stud_id = %L`, username), function(error, result, fields) {
+                        if (error) {
+                            _global.sendError(res, error.message);
+                            done();
+                            return console.log(error);
                         }
-                        function addPersonID(person_id){
-                            connection.query(format('UPDATE students SET person_id = %L WHERE stud_id = %L', person_id, username), function (error, result, fields) {
-                                if (error){
-                                    console.log(error.message + ' at get student_id from datbase (file)');
-                                } else {
-                                    console.log('Success add person id');
-                                    
+                        // check user exist personId
+                        if (result.rows[0].person_id == null){
+                            var dataAPI = {
+                                baseUrl: 'https://westcentralus.api.cognitive.microsoft.com',
+                                uri: `/face/v1.0/largepersongroups/${_global.largePersonGroup}/persons`,
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Ocp-Apim-Subscription-Key': `${_global.faceApiKey}`
+                                },
+                                method: 'POST',
+                                body: {
+                                    "name": username,
+                                    "userData": username
                                 }
-                            })
+                            }
+                            function addPersonID(person_id){
+                                connection.query(format('UPDATE students SET person_id = %L WHERE stud_id = %L', person_id, username), function (error, result, fields) {
+                                    if (error){
+                                        console.log(error.message + ' at get student_id from datbase (file)');
+                                    } else {
+                                        console.log('Success add person id'); 
+                                    }
+                                })
+                            }
+                            requestAPI(dataAPI, function (error, result) {
+                                if (error) {
+                                    _global.sendError(res, null, "Unknown Error");
+                                    return;
+                                }
+                                var person_id = result['personId'];
+                                if (person_id == undefined || person_id == '') {
+                                    _global.sendError(res, null, "Cannot get Person Id");
+                                    return;
+                                } else {
+                                    addPersonID(person_id);
+                                }
+                            });
                         }
-                        requestAPI(dataAPI, function (error, result) {
-                            if (error) {
-                                _global.sendError(res, null, "Unknown Error");
-                                return;
-                            }
-                            var person_id = result['personId'];
-                            if (person_id == undefined || person_id == '') {
-                                _global.sendError(res, null, "Cannot get Person Id");
-                                return;
-                            } else {
-                                personId = person_id
-                                addPersonID(person_id);
-                            }
-                        });
-                    } else {
-                        personId = result.rows[0].person_id;
-                    }
-                })
+                    })
+                }
             }
             for(var i = 0 ; i < result.rowCount ; i++){
                 var password_hash = result.rows[i].password;
                 if(password_hash != null && password_hash != ''){
                     if (bcrypt.compareSync(password, password_hash)) {
                         var token = jwt.sign(result.rows[i], _global.jwt_secret_key, { expiresIn: _global.jwt_expire_time });
-                        if (flag_student){
-                            console.log('Have person ID', personId);
-                            res.send({ result: 'success', token: token, user: result.rows[i], person_id: personId});
-                            done();
-                            return;
-                        } else {
-                            console.log('Teacher');
-                            res.send({ result: 'success', token: token, user: result.rows[i]});
-                            done();
-                            return;
-                        }   
+                        res.send({ result: 'success', token: token, user: result.rows[i]});
+                        done();
+                        return;  
                     }
                 }
             }

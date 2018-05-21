@@ -308,6 +308,33 @@ router.get('/detail/:id', function (req, res, next) {
     });
 });
 
+// Get student detail by id post method
+router.post('/student-by-id', function (req, res, next) {
+    if (req.body.id == undefined || req.body.id == '') {
+        _global.sendError(res, null, "Student id is required");
+        return;
+    }
+    var id = req.body.id;
+    pool_postgres.connect(function (error, connection, done) {
+        if (connection == undefined) {
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
+        connection.query(format(`SELECT users.*,students.stud_id AS code, students.person_id,students.status,classes.id AS class_id ,classes.name AS class_name
+            FROM users,students,classes
+            WHERE users.id = %L AND users.id = students.id AND students.class_id = classes.id  LIMIT 1`, id), function (error, result, fields) {
+                if (error) {
+                    _global.sendError(res, error.message);
+                    done();
+                    return console.log(error);
+                }
+                res.send({ result: 'success', student: result.rows[0]});
+                done();
+        });
+    });
+});
+
 router.put('/update', function (req, res, next) {
     if (req.body.id == undefined || req.body.id == '') {
         _global.sendError(res, null, "Student code is required");
