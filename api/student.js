@@ -517,16 +517,7 @@ router.post('/uploadFace', function (req, res, next) {
                         else callback();
                     });
                 },
-            ], function (error) {
-                if (error) {
-                    console.log('error at rollback');
-                    _global.sendError(res, error.message);
-                    connection.query('ROLLBACK', (error) => {
-                        if (error) return console.log(error);
-                    });
-                    done(error);
-                    return console.log(error);
-                } else {
+                function (callback){
                     async.auto({
                         trainingLargePersonGroup: function(callback){
                             var dataAPI = {
@@ -584,6 +575,20 @@ router.post('/uploadFace', function (req, res, next) {
                             console.log('results=', results);
                         }
                     })
+                }
+            ], function (error) {
+                if (error) {
+                    console.log('error at rollback');
+                    _global.sendError(res, error.message);
+                    connection.query('ROLLBACK', (error) => {
+                        if (error) return console.log(error);
+                    });
+                    done(error);
+                    return console.log(error);
+                } else {
+                    console.log('Success adding face to student!---------------------------------------');
+                    res.send({ result: 'success', message: 'Face Added Successfully' });
+                    done();
                 }
             });
         });
