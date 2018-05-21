@@ -516,65 +516,6 @@ router.post('/uploadFace', function (req, res, next) {
                         if (error) callback(error);
                         else callback();
                     });
-                },
-                function (callback){
-                    async.auto({
-                        trainingLargePersonGroup: function(callback){
-                            var dataAPI = {
-                                baseUrl: 'https://westcentralus.api.cognitive.microsoft.com',
-                                uri: `/face/v1.0/largepersongroups/${_global.largePersonGroup}/train`,
-                                headers: {
-                                    'Ocp-Apim-Subscription-Key': `${_global.faceApiKey}`
-                                },
-                                method: 'POST',
-                            }
-                        
-                            requestAPI(dataAPI, function (error, result) {
-                                if (error) {
-                                    console.log(error);
-                                    return;
-                                }
-                                callback(null,'accepted');
-                            });
-                        },
-                        getTrainingStatus: function(callback){
-                            var dataAPI = {
-                                baseUrl: 'https://westcentralus.api.cognitive.microsoft.com',
-                                uri: `/face/v1.0/largepersongroups/${_global.largePersonGroup}/training`,
-                                headers: {
-                                    'Ocp-Apim-Subscription-Key': `${_global.faceApiKey}`
-                                },
-                                method: 'GET',
-                            }
-                        
-                            requestAPI(dataAPI, function (error, result) {
-                                if (error) {
-                                    console.log(error);
-                                    return;
-                                }
-                                callback(null,result);
-                            });
-                        },
-                        checkIfTrainingSuccess: ['trainingLargePersonGroup', 'getTrainingStatus', function(callback, result){
-                            var trainingRequest = result['trainingLargePersonGroup'];
-                            var trainingStatus = result['getTrainingStatus'].status;
-
-                            if (trainingRequest == 'accepted' && trainingStatus == 'succeeded'){
-                                console.log('Success adding face to student!---------------------------------------');
-                                res.send({ result: 'success', message: 'Face Added Successfully' });
-                                callback(null, {result: 'success', message: 'Face Added Successfully'});
-                                done();
-                            } else {
-                                callback('Error add upload Face student', null);
-                            }
-                        }]
-                    }, function(err, results){
-                        if(err){
-                            console.log('error=', err);
-                        } else {
-                            console.log('results=', results);
-                        }
-                    })
                 }
             ], function (error) {
                 if (error) {
@@ -591,6 +532,53 @@ router.post('/uploadFace', function (req, res, next) {
                     done();
                 }
             });
+            async.series([
+                function(callback){
+                    var dataAPI = {
+                        baseUrl: 'https://westcentralus.api.cognitive.microsoft.com',
+                        uri: `/face/v1.0/largepersongroups/${_global.largePersonGroup}/train`,
+                        headers: {
+                            'Ocp-Apim-Subscription-Key': `${_global.faceApiKey}`
+                        },
+                        method: 'POST',
+                    }
+                
+                    requestAPI(dataAPI, function (error, result) {
+                        if (error) {
+                            callback(error);
+                        } else {
+                            console.log('TRAIN GROUP');
+                            callback();
+                        }
+                    });
+                },
+                function(callback){
+                    var dataAPI = {
+                        baseUrl: 'https://westcentralus.api.cognitive.microsoft.com',
+                        uri: `/face/v1.0/largepersongroups/${_global.largePersonGroup}/training`,
+                        headers: {
+                            'Ocp-Apim-Subscription-Key': `${_global.faceApiKey}`
+                        },
+                        method: 'GET',
+                    }
+                
+                    requestAPI(dataAPI, function (error, result) {
+                        if (error) {
+                            callback(error);
+                        } else {
+                            console.log(result);
+                            callback();
+                        }
+                    });
+                }
+            ], function (error) {
+                if (error) {
+                    return console.log(error);
+                } else {
+                    console.log('Success train group!---------------------------------------');
+                    // res.send({ result: 'success', message: 'Train group Successfully' });
+                }
+            })
         });
     });
 });
