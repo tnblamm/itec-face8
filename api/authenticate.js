@@ -74,6 +74,7 @@ router.post('/login', function(req, res, next) {
                                     } else {
                                         console.log('Success add person id');
                                         personId = person_id;
+                                        console.log(personId);
                                     }
                                 })
                             }
@@ -100,6 +101,7 @@ router.post('/login', function(req, res, next) {
                     if (bcrypt.compareSync(password, password_hash)) {
                         var token = jwt.sign(result.rows[i], _global.jwt_secret_key, { expiresIn: _global.jwt_expire_time });
                         if (personId != ''){
+                            console.log('Have person ID', personId);
                             res.send({ result: 'success', token: token, user: result.rows[i], person_id: personId});
                             done();
                             return;
