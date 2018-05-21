@@ -4,7 +4,7 @@ module.exports = {
     db: {
         host: 'localhost',
         user: 'root',
-        password: '',
+        password: 'nghi1996',
         database: 'qldd'
     },
     // ===== Database on Server
@@ -19,9 +19,9 @@ module.exports = {
     db_postgres: {
        host: 'localhost',
        user: 'postgres',
-       password: 'postgres',
+       password: 'nghi1996',
        port:'5432',
-       database: 'itec-face81'
+       database: 'qldd'
     },
     host: 'localhost:3000',
     largePersonGroup: 'hcmus-face',

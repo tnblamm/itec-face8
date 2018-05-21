@@ -190,6 +190,46 @@ export class AppService {
             });
     }
 
+    public uploadUrl = 'https://api.imgur.com/3/image';
+    public upload_face(face: any): Observable < { result: any} > {
+        console.log(face);
+        var formdata = new FormData();
+        formdata.append("image",face);
+        // formdata.append("person_id",person_id);
+        // formdata.append("face_image",face_image);        
+        // let authToken = this.authService.token;
+        // let headers = new Headers();
+        // headers.append('token', `${authToken}`);
+        // let options = new RequestOptions({ headers: headers });
+        let headers = new Headers();
+        headers.append("Authorization", "Client-ID 8037a5266e3e44d");
+        let options = new RequestOptions({ headers: headers });
+        return this.http.post(this.uploadUrl, formdata, options)
+        .map((res: Response) => res.json())
+        .catch((error: any) => {
+            if(error.status == 401){
+                this.authService.tokenExpired(this.router.url);
+            }
+            return Observable.throw(error || 'Server error');
+        });
+    }
+    
+    public detectUrl = 'https://westcentralus.api.cognitive.microsoft.com/face/v1.0/detect';    
+    public detect_face(faceUrl: any): Observable < { result: any} > {
+        let authToken = this.authService.token;
+        let headers = new Headers();
+        headers.append('token', `${authToken}`);
+        let options = new RequestOptions({ headers: headers });
+        return this.http.post(this.detectUrl, faceUrl, options)
+        .map ((res: Response) => res.json())
+        .catch((error: any) => {
+            if(error.status == 401){
+                this.authService.tokenExpired(this.router.url);
+            }
+            return Observable.throw(error || 'Server error');
+        });
+    }
+
     public showPNotify(title, message, type) {
         PNotify.desktop.permission();
         new PNotify({

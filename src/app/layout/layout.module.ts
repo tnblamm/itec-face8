@@ -5,6 +5,7 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { LayoutComponent } from './layout.component';
 import { ChangePasswordComponent } from '../change-password/change-password.component';
+import { UploadFaceComponent } from '../upload-face/upload-face.component';
 
 import { SharedModule } from '../shared/shared.module';
 import { AuthGuardService } from '../shared/shared.module';
@@ -29,12 +30,14 @@ const ROUTES = [{
         { path: 'programs', loadChildren: 'app/programs/programs.module#ProgramsModule' },
         { path: 'semesters', loadChildren: 'app/semesters/semesters.module#SemestersModule' },
         { path: 'change-password', component: ChangePasswordComponent },
+        { path: 'upload-face', component: UploadFaceComponent },
     ]
 }, ];
 @NgModule({
     declarations: [
         LayoutComponent,
         ChangePasswordComponent,
+        UploadFaceComponent
     ],
     imports: [
         FormsModule,
