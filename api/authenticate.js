@@ -25,6 +25,7 @@ router.post('/login', function(req, res, next) {
     }
     var username = req.body.username;
     var password = req.body.password;
+    var personId = '';
     pool_postgres.connect(function(error, connection, done) {
         if (error) {
             _global.sendError(res, error.message);
@@ -32,7 +33,7 @@ router.post('/login', function(req, res, next) {
             return console.log(error);
         }
 
-        connection.query(format(`SELECT *, students.person_id FROM users, students WHERE email LIKE %L AND users.id = students.id`, username + '@%'), function(error, result, fields) {
+        connection.query(format(`SELECT * FROM users WHERE email LIKE %L`, username + '@%'), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
                 done();
@@ -72,6 +73,7 @@ router.post('/login', function(req, res, next) {
                                         console.log(error.message + ' at get student_id from datbase (file)');
                                     } else {
                                         console.log('Success add person id');
+                                        personId = person_id;
                                     }
                                 })
                             }
@@ -97,9 +99,15 @@ router.post('/login', function(req, res, next) {
                 if(password_hash != null && password_hash != ''){
                     if (bcrypt.compareSync(password, password_hash)) {
                         var token = jwt.sign(result.rows[i], _global.jwt_secret_key, { expiresIn: _global.jwt_expire_time });
-                        res.send({ result: 'success', token: token, user: result.rows[i] });
-                        done();
-                        return
+                        if (personId != ''){
+                            res.send({ result: 'success', token: token, user: result.rows[i], person_id: personId});
+                            done();
+                            return;
+                        } else {
+                            res.send({ result: 'success', token: token, user: result.rows[i]});
+                            done();
+                            return;
+                        }   
                     }
                 }
             }
