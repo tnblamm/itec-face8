@@ -453,9 +453,6 @@ router.post('/uploadFace', function (req, res, next) {
     var person_id = req.body.person_id;
     var face_image = req.body.face_image;
     var face_id = req.body.face_id;
-    console.log(person_id);
-    console.log(face_image);
-    console.log(face_id);
 
     pool_postgres.connect(function (error, connection, done) {
         if (error) {
@@ -530,9 +527,63 @@ router.post('/uploadFace', function (req, res, next) {
                     done(error);
                     return console.log(error);
                 } else {
-                    console.log('Success adding face to student!---------------------------------------');
-                    res.send({ result: 'success', message: 'Face Added Successfully' });
-                    done();
+                    async.auto({
+                        trainingLargePersonGroup: function(callback){
+                            var dataAPI = {
+                                baseUrl: 'https://westcentralus.api.cognitive.microsoft.com',
+                                uri: `/face/v1.0/largepersongroups/${_global.largePersonGroup}/train`,
+                                headers: {
+                                    'Ocp-Apim-Subscription-Key': `${_global.faceApiKey}`
+                                },
+                                method: 'POST',
+                            }
+                        
+                            requestAPI(dataAPI, function (error, result) {
+                                if (error) {
+                                    console.log(error);
+                                    return;
+                                }
+                                callback(null,'accepted');
+                            });
+                        },
+                        getTrainingStatus: function(callback){
+                            var dataAPI = {
+                                baseUrl: 'https://westcentralus.api.cognitive.microsoft.com',
+                                uri: `/face/v1.0/largepersongroups/${_global.largePersonGroup}/training`,
+                                headers: {
+                                    'Ocp-Apim-Subscription-Key': `${_global.faceApiKey}`
+                                },
+                                method: 'GET',
+                            }
+                        
+                            requestAPI(dataAPI, function (error, result) {
+                                if (error) {
+                                    console.log(error);
+                                    return;
+                                }
+                                callback(null,result);
+                            });
+                        },
+                        checkIfTrainingSuccess: ['trainingLargePersonGroup', 'getTrainingStatus', function(callback, result){
+                            var trainingRequest = result['trainingLargePersonGroup'];
+                            var trainingStatus = result['getTrainingStatus'].status;
+
+                            if (trainingRequest == 'accepted' && trainingStatus == 'succeeded'){
+                                console.log('Success adding face to student!---------------------------------------');
+                                res.send({ result: 'success', message: 'Face Added Successfully' });
+                                callback(null, {result: 'success', message: 'Face Added Successfully'});
+                                done();
+                            } else {
+                                callback('Error add upload Face student', null);
+                            }
+                        }]
+                    }, function(err, results){
+                        if(err){
+                            console.log('error=', err);
+                        } else {
+                            console.log('results=', results);
+                        }
+                    })
                 }
             });
         });
