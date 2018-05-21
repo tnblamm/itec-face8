@@ -426,6 +426,9 @@ router.post('/uploadFace', function (req, res, next) {
     var person_id = req.body.person_id;
     var face_image = req.body.face_image;
     var face_id = req.body.face_id;
+    console.log(person_id);
+    console.log(face_image);
+    console.log(face_id);
 
     pool_postgres.connect(function (error, connection, done) {
         if (error) {
@@ -436,6 +439,7 @@ router.post('/uploadFace', function (req, res, next) {
 
         function removeFaces(person_id) {
             connection.query(format(`DELETE FROM student_has_faces WHERE person_id = %L`, person_id), function (error, result, fields) {
+                console.log('Delete faceid');
                 if (error) {
                     _global.sendError(res, error.message);
                     done();
@@ -445,6 +449,7 @@ router.post('/uploadFace', function (req, res, next) {
         }
 
         connection.query(format(`SELECT * FROM student_has_faces WHERE person_id = %L`, person_id), function (error, result, fields) {
+            console.log('Select students has face');
             if (error) {
                 _global.sendError(res, error.message);
                 done();
@@ -460,6 +465,7 @@ router.post('/uploadFace', function (req, res, next) {
                 face_id,
                 face_image,
             ]];
+            console.log('new_student_has_face', new_student_has_face);
 
             async.series([
                 //Start transaction
@@ -475,6 +481,7 @@ router.post('/uploadFace', function (req, res, next) {
                         if (error) {
                             callback(error);
                         } else {
+                            console.log('insert student has faces');
                             callback();
                         }
                     });
@@ -488,6 +495,7 @@ router.post('/uploadFace', function (req, res, next) {
                 },
             ], function (error) {
                 if (error) {
+                    console.log('error at rollback');
                     _global.sendError(res, error.message);
                     connection.query('ROLLBACK', (error) => {
                         if (error) return console.log(error);
