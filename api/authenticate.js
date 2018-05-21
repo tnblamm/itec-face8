@@ -52,6 +52,7 @@ router.post('/login', function(req, res, next) {
                             done();
                             return console.log(error);
                         }
+                        
                         // check user exist personId
                         if (result.rows[0].person_id == null){
                             var dataAPI = {
@@ -73,8 +74,7 @@ router.post('/login', function(req, res, next) {
                                         console.log(error.message + ' at get student_id from datbase (file)');
                                     } else {
                                         console.log('Success add person id');
-                                        personId = person_id;
-                                        console.log(personId);
+                                        personId = person_id
                                     }
                                 })
                             }
@@ -91,6 +91,8 @@ router.post('/login', function(req, res, next) {
                                     addPersonID(person_id);
                                 }
                             });
+                        } else {
+                            personId = result.rows[0].person_id;
                         }
                     })
                 }
