@@ -26,6 +26,7 @@ router.post('/login', function(req, res, next) {
     var username = req.body.username;
     var password = req.body.password;
     var personId = '';
+    var flag_student = false;
     pool_postgres.connect(function(error, connection, done) {
         if (error) {
             _global.sendError(res, error.message);
@@ -52,7 +53,7 @@ router.post('/login', function(req, res, next) {
                             done();
                             return console.log(error);
                         }
-                        
+                        flag_student = true;
                         // check user exist personId
                         if (result.rows[0].person_id == null){
                             var dataAPI = {
@@ -74,7 +75,7 @@ router.post('/login', function(req, res, next) {
                                         console.log(error.message + ' at get student_id from datbase (file)');
                                     } else {
                                         console.log('Success add person id');
-                                        personId = person_id
+                                        
                                     }
                                 })
                             }
@@ -88,6 +89,7 @@ router.post('/login', function(req, res, next) {
                                     _global.sendError(res, null, "Cannot get Person Id");
                                     return;
                                 } else {
+                                    personId = person_id
                                     addPersonID(person_id);
                                 }
                             });
@@ -102,12 +104,13 @@ router.post('/login', function(req, res, next) {
                 if(password_hash != null && password_hash != ''){
                     if (bcrypt.compareSync(password, password_hash)) {
                         var token = jwt.sign(result.rows[i], _global.jwt_secret_key, { expiresIn: _global.jwt_expire_time });
-                        if (personId != ''){
+                        if (flag_student){
                             console.log('Have person ID', personId);
                             res.send({ result: 'success', token: token, user: result.rows[i], person_id: personId});
                             done();
                             return;
                         } else {
+                            console.log('Teacher');
                             res.send({ result: 'success', token: token, user: result.rows[i]});
                             done();
                             return;
