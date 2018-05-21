@@ -32,7 +32,7 @@ router.post('/login', function(req, res, next) {
             return console.log(error);
         }
 
-        connection.query(format(`SELECT * FROM users WHERE email LIKE %L`, username + '@%'), function(error, result, fields) {
+        connection.query(format(`SELECT *, students.person_id FROM users, students WHERE email LIKE %L AND users.id = students.id`, username + '@%'), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
                 done();
