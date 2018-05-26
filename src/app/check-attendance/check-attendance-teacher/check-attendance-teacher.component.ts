@@ -323,14 +323,15 @@ export class CheckAttendanceTeacherComponent implements OnInit, OnDestroy {
                 break;
             }
         }
-        this.studentService.getStudentFaceRecognitionPhoto(this.current_student_id, this.selected_attendance_id).subscribe(result => {
-            console.log(44444);
-            console.log(result.attendance_detail.attendance_img);
-            this.faceRecognitionImage = result.attendance_detail.attendance_img;
-            console.log(this.faceRecognitionImage);
-            jQuery('#showCheckingImage').modal('show');
-        }, error => {this.appService.showPNotify('failure', "Server Error! Can't get image of face recognition", 'error');})
-        
+        if (current_student.attendance_details[current_student.attendance_details.length-1].attendance_type == 4){
+            this.studentService.getStudentFaceRecognitionPhoto(this.current_student_id, this.selected_attendance_id).subscribe(result => {
+                console.log(44444);
+                console.log(result.attendance_detail.attendance_img);
+                this.faceRecognitionImage = result.attendance_detail.attendance_img;
+                console.log(this.faceRecognitionImage);
+                jQuery('#showCheckingImage').modal('show');
+            }, error => {this.appService.showPNotify('failure', "Server Error! Can't get image of face recognition", 'error');})
+        }
     }
 
     public generateQuiz(){
