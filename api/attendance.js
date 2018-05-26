@@ -990,7 +990,7 @@ router.post('/check-attendance-list', function(req, res, next) {
     });
 });
 
-//Mobile
+//Mobile - Checklist
 router.post('/check-attendance', function(req, res, next) {
     if (req.body.attendance_id == null || req.body.attendance_id == 0) {
         _global.sendError(res, null, "attendance_id is required");
@@ -1031,6 +1031,74 @@ router.post('/check-attendance', function(req, res, next) {
                 FROM users, attendance_detail, students, student_enroll_course
                 WHERE users.id = students.id
                 AND attendance_detail.student_id = students.id
+                AND student_enroll_course.class_has_course_id = %L
+                AND students.id = student_enroll_course.student_id
+                AND attendance_detail.attendance_id = %L
+                AND student_enroll_course.attendance_status = %L`, class_has_course_id, attendance_id, _global.attendance_status.normal), function(error, result, fields) {
+
+                if (error) {
+                    var message = error.message + ' at get student_list by course';
+                    _global.sendError(res, message);
+                    done();
+                    return console.log(message);
+                }
+
+                console.log('loaded check_attendance_list');
+
+                res.send({
+                    result: 'success',
+                    length: result.rowCount,
+                    check_attendance_list: result.rows
+                });
+
+                done();
+            });
+        });
+    });
+});
+
+// Mobile - Get student list for Face Recognition
+router.post('/check-attendance-face-recognition', function(req, res, next) {
+    if (req.body.attendance_id == null || req.body.attendance_id == 0) {
+        _global.sendError(res, null, "attendance_id is required");
+        return console.log("attendance_id is required");
+    }
+
+    var attendance_id = req.body.attendance_id;
+    pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
+        if (error) {
+            var message = error.message + ' at get student_list by course';
+            _global.sendError(res, message);
+            done();
+            return console.log(message);
+        }
+
+        var class_has_course_id = 0;
+        connection.query(format(`SELECT class_has_course.id
+            FROM class_has_course, attendance
+            WHERE attendance.class_id = class_has_course.class_id
+            AND attendance.course_id = class_has_course.course_id
+            AND attendance.id = %L`, attendance_id), function(error, result, fields) {
+
+            if (error) {
+                var message = error.message + ' at get class_has_course_id';
+                _global.sendError(res, message);
+                done();
+                return console.log(message);
+            }
+
+            class_has_course_id = result.rows[0].id;
+
+            connection.query(format(`SELECT students.id as id, students.stud_id as code, students.person_id, CONCAT(users.first_name, ' ', users.last_name) AS name, attendance_detail.*, attendance_detail.attendance_type as status, users.avatar as avatar
+                FROM users, attendance_detail, students, student_enroll_course
+                WHERE users.id = students.id
+                AND attendance_detail.student_id = students.id
+                AND attendance_detail.attendance_type != 4
                 AND student_enroll_course.class_has_course_id = %L
                 AND students.id = student_enroll_course.student_id
                 AND attendance_detail.attendance_id = %L

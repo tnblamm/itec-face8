@@ -61,6 +61,7 @@ CREATE TABLE attendance_detail (
   attendance_type smallint NOT NULL DEFAULT '0',
   edited_by int DEFAULT NULL,
   edited_reason varchar(255) DEFAULT NULL,
+  attendance_image_id INTEGER,
   PRIMARY KEY (attendance_id,student_id)
 );
 
@@ -319,6 +320,7 @@ DROP TABLE IF EXISTS attendance_image;
 
 CREATE TABLE attendance_image
 (
+    id serial NOT NULL,
     attendance_id integer,
     created_time timestamp with time zone,
     attendance_img character varying(255)

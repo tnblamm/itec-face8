@@ -54,7 +54,7 @@
                                             <div class="checked_overlay" *ngIf="student.attendance_details[student.attendance_details.length-1].attendance_type"><i [ngClass]="['fa avatar_check', student.attendance_details[student.attendance_details.length-1]['icon']]"></i></div>
                                             <img [src]="student.avatar" class="attendance_avatar">
                                         </div>
-                                        <div class="caption">
+                                        <div class="caption" (click) ="showAttendanceImage(i, student.code)">
                                             <p><label>{{student.code}}</label></p>
                                             <p><label>{{student.name}}</label></p>
                                         </div>
@@ -268,3 +268,21 @@
         </div>
     </div>
 </div>
+
+<!-- Creates the bootstrap modal where the image will appear -->
+<div class="modal fade" id="showCheckingImage" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+              <h4 class="modal-title" id="myModalLabel">Image preview</h4>
+            </div>
+            <div class="modal-body">
+              <img [src]="faceRecognitionImage" id="imagepreview" style="width: 400px; height: 264px;" >
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>

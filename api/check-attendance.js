@@ -65,6 +65,7 @@ router.post('/verify-face', function (req, res, next) {
     var attendance_id = req.body.attendance_id;
     var attendance_type = req.body.attendance_type;
     var attendance_img = req.body.attendance_img;
+    var attendance_image_id = null;
 
     var class_id = 0;
     var course_id = 0;
@@ -76,25 +77,22 @@ router.post('/verify-face', function (req, res, next) {
             return console.log("Can't connect to database");
         }
         async.series([
-            // Update attendance detail table
+            function(callback){
+                connection.query(format(`INSERT INTO attendance_image(attendance_id, created_time, attendance_img) VALUES (%L, %L, %L) RETURNING id`, attendance_id, new Date(), attendance_img), function(error, result, fields) {
+                    if (error){
+                        callback(error.message + ' at update attendance image detail');
+                    }
+                    attendance_image_id = result.rows[0].id;
+                    console.log(attendance_image_id);
+                    callback();
+                });
+            },
             function(callback){
                 for (var i = 0; i < student.length; i++){
                     var current_student_id = student[i];
-                    connection.query(format(`UPDATE attendance_detail SET attendance_type = %L, attendance_time = %L WHERE attendance_id = %L AND student_id = %L`,attendance_type, new Date(), attendance_id, current_student_id), function(error, result, fields) {
+                    connection.query(format(`UPDATE attendance_detail SET attendance_type = %L, attendance_time = %L, attendance_image_id = %L WHERE attendance_id = %L AND student_id = %L`,attendance_type, new Date(), attendance_image_id, attendance_id, current_student_id), function(error, result, fields) {
                         if (error){
                             callback(error.message + ' at update attendance detail');
-                        }
-                    });
-                }
-                callback()
-            },
-            // Update attendance_image table
-            function(callback){
-                for (var j = 0; j < attendance_img.length; j++){
-                    var current_attendance_img = attendance_img[j];
-                    connection.query(format(`INSERT INTO attendance_image(attendance_id, created_time, attendance_img) VALUES (%L, %L, %L)`, attendance_id, new Date(), current_attendance_img), function(error, result, fields) {
-                        if (error){
-                            callback(error.message + ' at update attendance image detail');
                         }
                     });
                 }

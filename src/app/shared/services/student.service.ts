@@ -56,6 +56,29 @@ export class StudentService {
                 return Observable.throw(error || 'Server error');
             });
     }
+    // Get face recognition photo for student
+    public  getStudentFaceRecognitionPhotoUrl = this.appConfig.apiHost + '/student/getStudentFaceRecognitionPhoto';
+    public getStudentFaceRecognitionPhoto(id: number, attendance_id: number): Observable < { result: string, attendance_detail: any, message:string} > {
+        var params = {
+            'student_id': id,
+            'attendance_id': attendance_id
+        };
+        let authToken = this.authService.token;
+        let headers = new Headers();
+        headers.append('x-access-token', `${authToken}`);
+        let options = new RequestOptions({ headers: headers });
+        return this.http.post(this.getStudentFaceRecognitionPhotoUrl, params,options)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            .catch((error: any) => {
+                if (error.status == 401) {
+                    this.authService.tokenExpired(this.router.url);
+                }
+                //this.authService.tokenExpired(this.router.url);
+                return Observable.throw(error || 'Server error');
+            });
+    }
 
     public  addStudentUrl = this.appConfig.apiHost + '/student/add';
     public addStudent(program_id: number, class_id:number, code: string , first_name: string, last_name: string, email: string, phone: string = null, note:string = null): Observable < { result: string, message: string } > {

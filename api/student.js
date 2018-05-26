@@ -335,6 +335,41 @@ router.post('/student-by-id', function (req, res, next) {
     });
 });
 
+router.post('/getStudentFaceRecognitionPhoto', function (req, res, next) {
+    if (req.body.student_id == undefined || req.body.student_id == '') {
+        _global.sendError(res, null, "Student id is required");
+        return;
+    }
+    if (req.body.attendance_id == undefined || req.body.attendance_id == '') {
+        _global.sendError(res, null, "Attendance id is required");
+        return;
+    }
+    var student_id = req.body.student_id;
+    var attendance_id = req.body.attendance_id;
+
+    pool_postgres.connect(function (error, connection, done) {
+        if (connection == undefined) {
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
+        connection.query(format(`SELECT attendance_detail.*, attendance_image.attendance_img
+            FROM attendance_detail, attendance_image
+            WHERE attendance_detail.attendance_id = %L 
+            AND attendance_detail.student_id = %L 
+            AND attendance_detail.attendance_image_id = attendance_image.id`, attendance_id, student_id), function (error, result, fields) {
+                if (error) {
+                    _global.sendError(res, error.message);
+                    done();
+                    return console.log(error);
+                }
+
+                res.send({ result: 'success', attendance_detail: result.rows[0]});
+                done();
+        });
+    });
+});
+
 router.put('/update', function (req, res, next) {
     if (req.body.id == undefined || req.body.id == '') {
         _global.sendError(res, null, "Student code is required");

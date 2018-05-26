@@ -31,8 +31,10 @@ export class CheckAttendanceTeacherComponent implements OnInit, OnDestroy {
         });
     }
 
+    public current_student_id;
     public apiResult;
     public apiResultMessage;
+    public faceRecognitionImage = '';
 
     public selected_course_id;
     public selected_class_id;
@@ -309,6 +311,28 @@ export class CheckAttendanceTeacherComponent implements OnInit, OnDestroy {
             jQuery('#delegateCodeModal').modal('show');
         },error=>{this.appService.showPNotify('failure', "Server Error! Can't generate delegate code", 'error');});
     }
+
+    public showAttendanceImage(student_index: number){
+        console.log(11111);
+        var current_student = this.check_attendance_list[student_index];
+        for(var i = 0; i < this.check_attendance_list.length; i++){
+            console.log(22222);
+            if(current_student.code == this.check_attendance_list[i].code){
+                console.log(33333);
+                this.current_student_id = this.check_attendance_list[i].id;
+                break;
+            }
+        }
+        this.studentService.getStudentFaceRecognitionPhoto(this.current_student_id, this.selected_attendance_id).subscribe(result => {
+            console.log(44444);
+            console.log(result.attendance_detail.attendance_img);
+            this.faceRecognitionImage = result.attendance_detail.attendance_img;
+            console.log(this.faceRecognitionImage);
+            jQuery('#showCheckingImage').modal('show');
+        }, error => {this.appService.showPNotify('failure', "Server Error! Can't get image of face recognition", 'error');})
+        
+    }
+
     public generateQuiz(){
         this.localStorage.set('selected_attendance',this.selected_attendance);
         this.router.navigate(['/check-attendance/quiz/']);

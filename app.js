@@ -65,24 +65,24 @@ const forceSSL = function () {
  app.use(forceSSL());
 
 // Cron-tab for train group
-var j = schedule.scheduleJob('30 * * * *', function () {
-  var dataAPI = {
-    baseUrl: 'https://westcentralus.api.cognitive.microsoft.com',
-    uri: `/face/v1.0/largepersongroups/${_global.largePersonGroup}/train`,
-    headers: {
-      'Ocp-Apim-Subscription-Key': `${_global.faceApiKey}`
-    },
-    method: 'POST',
-  }
+// var j = schedule.scheduleJob('30 * * * *', function () {
+//   var dataAPI = {
+//     baseUrl: 'https://westcentralus.api.cognitive.microsoft.com',
+//     uri: `/face/v1.0/largepersongroups/${_global.largePersonGroup}/train`,
+//     headers: {
+//       'Ocp-Apim-Subscription-Key': `${_global.faceApiKey}`
+//     },
+//     method: 'POST',
+//   }
 
-  requestAPI(dataAPI, function (error, result) {
-    if (error) {
-      console.log(error);
-      return;
-    }
-    console.log('Your request accepted');
-  });
-});
+//   requestAPI(dataAPI, function (error, result) {
+//     if (error) {
+//       console.log(error);
+//       return;
+//     }
+//     console.log('Your request accepted');
+//   });
+// });
 
 //Xác định trang "public" cho client
 app.use(express.static(path.join(__dirname, 'dist')));
