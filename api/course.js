@@ -976,7 +976,7 @@ router.post('/export', function(req, res, next) {
             },
             //Commit transaction
             function(callback) {
-                cconnection.query('COMMIT',function(error) {
+                connection.query('COMMIT',function(error) {
                     if (error) callback(error);
                     else callback();
                 });

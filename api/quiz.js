@@ -900,6 +900,7 @@ router.post('/misc-question', function(req, res, next) {
 });
 
 router.post('/update', function(req, res, next) {
+    console.log(req.body.quiz.questions);
     if (req.body.quiz == null || req.body.quiz.length == 0) {
         _global.sendError(res, null, "Quiz is required");
         return console.log("Quiz is required");
@@ -913,6 +914,7 @@ router.post('/update', function(req, res, next) {
         return console.log("Quiz questions are required");
     }
     var quiz = req.body.quiz;
+    var quiz_id = req.body.quiz.questions[0].quiz_id;
     for (var i = 0; i < quiz.questions.length; i++) {
         if (req.body.quiz.questions[i].text == null || req.body.quiz.questions[i].text == '') {
             _global.sendError(res, null, "Title of question " + (i + 1) + " are required");
@@ -956,14 +958,26 @@ router.post('/update', function(req, res, next) {
             //update questions
             function(callback) {
                 async.each(quiz.questions, function(question, callback) {
-                    connection.query(format(`UPDATE quiz_questions SET text = %L,option_a = %L,option_b = %L,option_c = %L,option_d = %L,correct_option = %L,timer = %L
-                        WHERE id = %L AND quiz_id = %L`,question.text, question.option_a, question.option_b, question.option_c, question.option_d, question.correct_option, question.timer, question.id, question.quiz_id), function(error, result, fields) {
-                        if (error) {
-                            callback(error);
-                        } else {
-                            callback();
-                        }
-                    });
+                    if (!question.id){
+                            connection.query(format(`INSERT INTO quiz_questions (quiz_id,text,option_a,option_b,option_c,option_d,correct_option,timer) VALUES (%L,%L,%L,%L,%L,%L,%L,%L)`,
+                            quiz_id, question.text, question.option_a, question.option_b, question.option_c, question.option_d, question.correct_option, question.timer), function(error, result, fields) {
+                            if (error) {
+                                callback(error);
+                            } else {
+                                callback();
+                            }
+                        });
+                    } 
+                    else {
+                        connection.query(format(`UPDATE quiz_questions SET text = %L,option_a = %L,option_b = %L,option_c = %L,option_d = %L,correct_option = %L,timer = %L
+                            WHERE id = %L AND quiz_id = %L`,question.text, question.option_a, question.option_b, question.option_c, question.option_d, question.correct_option, question.timer, question.id, question.quiz_id), function(error, result, fields) {
+                            if (error) {
+                                callback(error);
+                            } else {
+                                callback();
+                            }
+                        });
+                    }
                 }, function(error) {
                     if (error) {
                         callback(error);

@@ -98,6 +98,7 @@ export class QuizTeacherComponent implements OnInit {
         },error=>{this.appService.showPNotify('failure',"Server Error! Can't add quiz",'error');});
     }
     public onAddQuestion() {
+        console.log('onAddQuestion', 22222);
         this.quiz.questions.push({
             text: '',
             option_a: '',
@@ -169,6 +170,7 @@ export class QuizTeacherComponent implements OnInit {
     }
 
     public onAddTemplateQuestion(quiz_index) {
+        console.log('onAddTemplateQuestion', 11111);
         this.quiz_list[quiz_index].questions.push({
             text: '',
             option_a: '',
