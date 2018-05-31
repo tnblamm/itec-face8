@@ -85,17 +85,21 @@ export class QuizTeacherComponent implements OnInit {
         jQuery('#addQuizModal').modal('show');
     }
     public addQuiz(){
-        this.quizService.addQuiz(this.selected_course['id'],this.selected_course['class_id'],this.quiz).subscribe(result=>{
-            this.apiResult = result.result;
-            this.apiResultMessage = result.message;
-            if(this.apiResult == 'failure'){
-                this.appService.showPNotify(this.apiResult,this.apiResultMessage,'error');
-            }else{
-                this.loadQuiz();
-                this.appService.showPNotify(this.apiResult,this.apiResultMessage,'success');
-                jQuery('#addQuizModal').modal('hide');
-            }
-        },error=>{this.appService.showPNotify('failure',"Server Error! Can't add quiz",'error');});
+        if(this.selected_course['id']){
+            this.quizService.addQuiz(this.selected_course['id'],this.selected_course['class_id'],this.quiz).subscribe(result=>{
+                this.apiResult = result.result;
+                this.apiResultMessage = result.message;
+                if(this.apiResult == 'failure'){
+                    this.appService.showPNotify(this.apiResult,this.apiResultMessage,'error');
+                }else{
+                    this.loadQuiz();
+                    this.appService.showPNotify(this.apiResult,this.apiResultMessage,'success');
+                    jQuery('#addQuizModal').modal('hide');
+                }
+            },error=>{this.appService.showPNotify('failure',"Server Error! Can't add quiz",'error');});
+        } else {
+            this.appService.showPNotify('failure',"Server Error! Can't get course id",'error');
+        }
     }
     public onAddQuestion() {
         console.log('onAddQuestion', 22222);
