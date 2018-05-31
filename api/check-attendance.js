@@ -22,13 +22,39 @@ router.post('/check-list', function (req, res, next) {
     var student_id = req.body.student_id;
     var attendance_id = req.body.attendance_id;
     var attendance_type = req.body.attendance_type;
+    var course_id = 0;
+    var class_id = 0;
+
     pool_postgres.connect(function (error, connection, done) {
         if (connection == undefined) {
             _global.sendError(res, null, "Can't connect to database");
             done();
             return console.log("Can't connect to database");
         }
-        connection.query(format(`UPDATE attendance_detail SET attendance_type = %L, attendance_time = %L WHERE attendance_id = %L AND student_id = %L`, attendance_type, new Date(), attendance_id, student_id), function (error, result, fields) {
+        async.series([
+            function(callback){
+                connection.query(format(`UPDATE attendance_detail SET attendance_type = %L, attendance_time = %L WHERE attendance_id = %L AND student_id = %L`, attendance_type, new Date(), attendance_id, student_id), function (error, result, fields) {
+                    if (error){
+                        callback(error.message + ' at update attendance detail');
+                    } else {
+                        callback();
+                    } 
+                });
+            },
+            function(callback){
+                connection.query(format(`SELECT * FROM class_has_course,attendance,student_enroll_course 
+                WHERE class_has_course.class_id = attendance.class_id AND attendance.course_id = class_has_course.course_id AND student_enroll_course.class_has_course_id = class_has_course.id 
+                AND attendance.id = %L AND student_enroll_course.student_id = %L`, attendance_id, student_id), function (error, result, fields) {
+                    if (error){
+                        callback(error.message + ' at get course id');
+                    } else {
+                        class_id = result.rows[0].class_id;
+                        course_id = result.rows[0].course_id;
+                        callback();
+                    } 
+                });
+            }
+        ], function(error){
             if (error) {
                 _global.sendError(res, null, 'error at update attendance_detail');
                 done();
@@ -37,6 +63,8 @@ router.post('/check-list', function (req, res, next) {
                 res.send({
                     result: 'success',
                 });
+                var socket = req.app.get('socket');
+                socket.emit('checkAttendanceUpdated', {'course_id':course_id,'class_id':class_id});
                 done();
             }
         });
