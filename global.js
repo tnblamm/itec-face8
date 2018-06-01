@@ -27,7 +27,7 @@ module.exports = {
     // },
     host: 'https://iteccyle8.herokuapp.com',
     largePersonGroup: 'hcmus-face',
-    faceApiKey: '18db52d47bc5483f92d687a957c40c98',
+    faceApiKey: '6c929030cf454ee2b1eb0dac91c388f8',
     email_setting: {
         host: 'smtp.office365.com', // Office 365 server
         port: 587, // secure SMTP
